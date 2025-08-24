@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://koouk.vercel.app/sitemap.xml

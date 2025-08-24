@@ -9,6 +9,16 @@ export const metadata: Metadata = {
   description: 'Easy Easy Super Easy, Notion을 대신하는 개인 Storage',
   keywords: ['storage', 'bookmark', 'folder', 'personal', 'digital'],
   authors: [{ name: 'KOOUK Team' }],
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png' }
+    ],
+    apple: [
+      { url: '/icon.png', sizes: '180x180', type: 'image/png' }
+    ]
+  },
+  manifest: '/manifest.json'
 }
 
 export const viewport = {
