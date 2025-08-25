@@ -1,7 +1,3 @@
-'use client'
-
-import LoginButton from '@/components/ui/LoginButton'
-
 export default function HomePage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -20,7 +16,13 @@ export default function HomePage() {
         </p>
         
         <div className="flex justify-center mb-16">
-          <LoginButton size="lg" />
+          <a 
+            href="/dashboard"
+            className="bg-blue-600 hover:bg-blue-700 text-white text-lg font-medium py-3 px-8 rounded-lg transition-colors inline-flex items-center space-x-2"
+          >
+            <span>🚀</span>
+            <span>Get Started</span>
+          </a>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-4xl mx-auto">
