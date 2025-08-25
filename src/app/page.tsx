@@ -1,11 +1,7 @@
-'use client'
-
-import LoginButton from '@/components/ui/LoginButton'
-
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center max-w-4xl mx-auto px-4">
         <div className="w-20 h-20 bg-gray-900 rounded-2xl flex items-center justify-center mx-auto mb-8">
           <span className="text-white text-2xl font-bold">K</span>
         </div>
@@ -19,8 +15,14 @@ export default function HomePage() {
           and discover amazing content shared by our community.
         </p>
         
-        <div className="flex justify-center">
-          <LoginButton size="lg" />
+        <div className="flex justify-center mb-16">
+          <a 
+            href="/auth/callback"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors inline-flex items-center space-x-2"
+          >
+            <span>🚀</span>
+            <span>Get Started</span>
+          </a>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-4xl mx-auto">
