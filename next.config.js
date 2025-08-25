@@ -1,5 +1,3 @@
-import type { NextConfig } from 'next'
-
 // @ts-ignore - next-pwa doesn't have TypeScript declarations
 const withPWA = require('next-pwa')({
   dest: 'public',
@@ -32,7 +30,8 @@ const withPWA = require('next-pwa')({
   ],
 })
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   // Disable ESLint during build for faster deployment
   eslint: {
     ignoreDuringBuilds: true,
@@ -64,4 +63,4 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withPWA(nextConfig)
+module.exports = withPWA(nextConfig)
