@@ -276,7 +276,7 @@ export default function DashboardPage() {
 
         {/* Pro Features Preview */}
         {userUsage?.plan === 'free' && (
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg shadow-sm text-white">
+          <div className="bg-gray-800 rounded-lg shadow-sm text-white">
             <div className="p-6">
               <h2 className="text-lg font-semibold mb-4">🎆 Pro 플랜으로 업그레이드</h2>
               <div className="space-y-3 mb-4">
@@ -302,14 +302,14 @@ export default function DashboardPage() {
                   setUpgradeReason('paid_selling')
                   setShowUpgradeModal(true)
                 }}
-                className="w-full bg-white text-purple-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+                className="w-full bg-white text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors font-medium"
               >
                 <div className="flex items-center justify-center">
                   <span className="mr-2">🚀</span>
                   <span>공개 예정 - 기대해주세요!</span>
                 </div>
               </button>
-              <p className="text-xs text-purple-100 text-center mt-2">
+              <p className="text-xs text-gray-300 text-center mt-2">
                 Pro 플랜은 공개 예정입니다. 공개 시 우선 알림을 드릴게요!
               </p>
             </div>

@@ -10,9 +10,9 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const supabase = createSupabaseClient()
-
   useEffect(() => {
+    const supabase = createSupabaseClient()
+    
     // Get initial session
     const getSession = async () => {
       try {
@@ -35,6 +35,9 @@ export function useAuth() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (event === 'INITIAL_SESSION') {
+          return
+        }
         console.log('Auth state changed:', event, session)
         setSession(session)
         setUser(session?.user ?? null)
@@ -44,10 +47,11 @@ export function useAuth() {
     )
 
     return () => subscription.unsubscribe()
-  }, [supabase])
+  }, [])
 
   const signInWithGoogle = async () => {
     try {
+      const supabase = createSupabaseClient()
       setLoading(true)
       setError(null)
       const { error } = await supabase.auth.signInWithOAuth({
@@ -68,6 +72,7 @@ export function useAuth() {
 
   const signOut = async () => {
     try {
+      const supabase = createSupabaseClient()
       setLoading(true)
       setError(null)
       const { error } = await supabase.auth.signOut()

@@ -11,7 +11,8 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const { data, error } = await supabase.auth.getSession()
+        // URL에서 auth code 처리
+        const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href)
         
         if (error) {
           console.error('Auth callback error:', error)
@@ -33,7 +34,7 @@ export default function AuthCallback() {
     }
 
     handleAuthCallback()
-  }, [router, supabase])
+  }, [router])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

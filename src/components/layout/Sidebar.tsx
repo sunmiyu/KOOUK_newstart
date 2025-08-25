@@ -6,6 +6,7 @@ import { useState, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import AccountMenuModal from '@/components/ui/AccountMenuModal'
+import PWAInstallBanner from '@/components/ui/PWAInstallBanner'
 
 const navigationItems = [
   {
@@ -46,7 +47,7 @@ export default function Sidebar() {
     <aside className="w-64 bg-gray-950 text-white min-h-screen flex flex-col">
       {/* Logo Section */}
       <div className="p-6 border-b border-gray-700">
-        <Link href="/" className="flex items-center">
+        <Link href="/dashboard" className="flex items-center">
           <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center mr-3">
             <span className="text-gray-900 text-lg font-bold">K</span>
           </div>
@@ -89,6 +90,9 @@ export default function Sidebar() {
           })}
         </div>
       </nav>
+
+      {/* PWA Install Banner */}
+      <PWAInstallBanner />
 
       {/* User Profile Section */}
       <div className="p-4 border-t border-gray-700">

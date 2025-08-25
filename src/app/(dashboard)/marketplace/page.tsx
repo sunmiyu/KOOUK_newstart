@@ -40,24 +40,24 @@ export default function MarketplacePage() {
       </div>
 
       {/* Featured Section */}
-      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-8 mb-8 text-white">
+      <div className="bg-gray-800 rounded-xl p-8 mb-8 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold mb-2">🌟 Featured Collection</h2>
-            <p className="text-indigo-100 mb-4">
+            <p className="text-gray-300 mb-4">
               Curated by the community • This week's top pick
             </p>
             <div className="flex items-center space-x-4">
               <span className="bg-white/20 px-3 py-1 rounded-full text-sm">Design Resources</span>
-              <span className="text-indigo-200">•</span>
-              <span className="text-indigo-200">245 downloads</span>
-              <span className="text-indigo-200">•</span>
-              <span className="text-indigo-200">89 likes</span>
+              <span className="text-gray-400">•</span>
+              <span className="text-gray-400">245 downloads</span>
+              <span className="text-gray-400">•</span>
+              <span className="text-gray-400">89 likes</span>
             </div>
           </div>
           <button 
             onClick={() => console.log('Featured collection clicked')}
-            className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-medium hover:bg-indigo-50 transition-colors"
+            className="bg-white text-gray-800 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
           >
             View Collection
           </button>
@@ -73,14 +73,14 @@ export default function MarketplacePage() {
               onClick={() => setSelectedCategory(category.id)}
               className={`flex items-center space-x-2 px-4 py-2 rounded-full border transition-colors ${
                 selectedCategory === category.id
-                  ? 'border-indigo-500 bg-indigo-50 text-indigo-600'
+                  ? 'border-gray-500 bg-gray-50 text-gray-800'
                   : 'border-gray-300 hover:border-gray-400 text-gray-700'
               }`}
             >
               <span className="text-sm font-medium">{category.name}</span>
               <span className={`text-xs px-2 py-1 rounded-full ${
                 selectedCategory === category.id
-                  ? 'bg-indigo-100 text-indigo-600'
+                  ? 'bg-gray-100 text-gray-800'
                   : 'bg-gray-100 text-gray-600'
               }`}>
                 {category.count}
@@ -96,7 +96,7 @@ export default function MarketplacePage() {
               placeholder="Search collections..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500"
             />
             <svg className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
@@ -215,7 +215,7 @@ export default function MarketplacePage() {
                 </button>
               </div>
               
-              <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
+              <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-gray-700 transition-colors">
                 {collection.name}
               </h3>
               
