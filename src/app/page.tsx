@@ -1,65 +1,138 @@
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center max-w-4xl mx-auto px-4">
-        <div className="w-20 h-20 bg-gray-900 rounded-2xl flex items-center justify-center mx-auto mb-8">
-          <span className="text-white text-2xl font-bold">K</span>
+    <div style={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      backgroundColor: '#f9fafb',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
+      <div style={{ textAlign: 'center', maxWidth: '800px', padding: '20px' }}>
+        <div style={{ 
+          width: '80px', 
+          height: '80px', 
+          backgroundColor: '#1f2937', 
+          borderRadius: '16px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          margin: '0 auto 32px',
+          color: 'white',
+          fontSize: '32px',
+          fontWeight: 'bold'
+        }}>
+          K
         </div>
         
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <h1 style={{ 
+          fontSize: '48px', 
+          fontWeight: 'bold', 
+          color: '#1f2937', 
+          margin: '0 0 16px 0'
+        }}>
           Welcome to KOOUK
         </h1>
         
-        <p className="text-gray-600 text-lg mb-8 max-w-md mx-auto">
-          Your personal digital life manager. Organize folders, save bookmarks, 
-          and discover amazing content shared by our community.
+        <p style={{ 
+          color: '#6b7280', 
+          fontSize: '20px', 
+          maxWidth: '400px',
+          margin: '0 auto 32px'
+        }}>
+          Your personal digital life manager. Organize folders, save bookmarks, and discover amazing content.
         </p>
         
-        <div className="flex justify-center mb-16">
+        <div style={{ marginBottom: '64px' }}>
           <a 
-            href="/auth/callback"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors inline-flex items-center space-x-2"
+            href="/dashboard"
+            style={{
+              backgroundColor: '#2563eb',
+              color: 'white',
+              fontWeight: '500',
+              padding: '12px 24px',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
           >
             <span>🚀</span>
             <span>Get Started</span>
           </a>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-4xl mx-auto">
-          <div className="text-center p-6 bg-white rounded-lg shadow-sm">
-            <div className="text-3xl mb-4">📁</div>
-            <h3 className="font-semibold mb-2">My Folder</h3>
-            <p className="text-sm text-gray-600">
+
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+          gap: '32px',
+          marginTop: '64px'
+        }}>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '24px', 
+            backgroundColor: 'white', 
+            borderRadius: '8px', 
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📁</div>
+            <h3 style={{ fontWeight: '600', marginBottom: '8px', color: '#1f2937' }}>My Folder</h3>
+            <p style={{ fontSize: '14px', color: '#6b7280' }}>
               Organize your digital content in smart folders. Links, notes, images - everything in one place.
             </p>
           </div>
           
-          <div className="text-center p-6 bg-white rounded-lg shadow-sm">
-            <div className="text-3xl mb-4">🔖</div>
-            <h3 className="font-semibold mb-2">Bookmarks</h3>
-            <p className="text-sm text-gray-600">
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '24px', 
+            backgroundColor: 'white', 
+            borderRadius: '8px', 
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔖</div>
+            <h3 style={{ fontWeight: '600', marginBottom: '8px', color: '#1f2937' }}>Bookmarks</h3>
+            <p style={{ fontSize: '14px', color: '#6b7280' }}>
               Save websites instantly. Auto-categorization and smart search make finding things effortless.
             </p>
           </div>
           
-          <div className="text-center p-6 bg-white rounded-lg shadow-sm">
-            <div className="text-3xl mb-4">🛍️</div>
-            <h3 className="font-semibold mb-2">Marketplace</h3>
-            <p className="text-sm text-gray-600">
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '24px', 
+            backgroundColor: 'white', 
+            borderRadius: '8px', 
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🛍️</div>
+            <h3 style={{ fontWeight: '600', marginBottom: '8px', color: '#1f2937' }}>Marketplace</h3>
+            <p style={{ fontSize: '14px', color: '#6b7280' }}>
               Discover and import curated content collections shared by our community.
             </p>
           </div>
         </div>
         
-        <div className="mt-16 text-center">
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">
+        <div style={{ marginTop: '64px', textAlign: 'center' }}>
+          <h3 style={{ 
+            fontSize: '32px', 
+            fontWeight: 'bold', 
+            color: '#1f2937', 
+            marginBottom: '16px' 
+          }}>
             Simple. Fast. Intuitive.
           </h3>
-          <p className="text-gray-600 mb-8">
+          <p style={{ color: '#6b7280', marginBottom: '32px' }}>
             No complex setup, no learning curve. Start organizing your digital life in seconds.
           </p>
           
-          <div className="flex justify-center items-center space-x-8 text-sm text-gray-500">
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            gap: '32px',
+            fontSize: '14px', 
+            color: '#9ca3af'
+          }}>
             <span>✓ Free to use</span>
             <span>✓ No downloads</span>
             <span>✓ Works everywhere</span>

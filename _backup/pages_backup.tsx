@@ -10,6 +10,46 @@
 - 페이지명_v숫자 형태로 명명
 */
 
+// ===== HomePage 백업 =====
+/*
+HomePage_v1 - 2025-01-25
+- Client-side auth hook 제거 전 버전
+- /auth/callback 링크로 간소화 전 버전
+
+export default function HomePage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center max-w-4xl mx-auto px-4">
+        <div className="w-20 h-20 bg-gray-900 rounded-2xl flex items-center justify-center mx-auto mb-8">
+          <span className="text-white text-2xl font-bold">K</span>
+        </div>
+        
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          Welcome to KOOUK
+        </h1>
+        
+        <p className="text-gray-600 text-lg mb-8 max-w-md mx-auto">
+          Your personal digital life manager. Organize folders, save bookmarks, 
+          and discover amazing content shared by our community.
+        </p>
+        
+        <div className="flex justify-center mb-16">
+          <a 
+            href="/auth/callback"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors inline-flex items-center space-x-2"
+          >
+            <span>🚀</span>
+            <span>Get Started</span>
+          </a>
+        </div>
+        
+        [... 나머지 섹션들 ...]
+      </div>
+    </div>
+  )
+}
+*/
+
 // ===== DashboardPage 백업 =====
 // (아직 백업된 버전 없음)
 
