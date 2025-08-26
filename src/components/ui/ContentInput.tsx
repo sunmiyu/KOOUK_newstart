@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Folder, CreateContentData } from '@/types/folder'
-import { extractMetadata, isValidUrl } from '@/utils/metadata'
-import { isYouTubeUrl, getYouTubeMetadata } from '@/utils/youtube'
+import { fetchEnhancedMetadata, isValidUrl, isYouTubeUrl } from '@/utils/enhancedMetadata'
 
 interface ContentInputProps {
   selectedFolder?: Folder
@@ -78,38 +77,31 @@ export default function ContentInput({
     }
   }
 
-  // 메타데이터 추출
+  // 향상된 메타데이터 추출
   const extractContentMetadata = async (content: string, type: CreateContentData['type']) => {
-    const metadata: Record<string, any> = {}
+    if (type !== 'link') return {}
 
-    if (type === 'link' && isYouTubeUrl(content)) {
-      try {
-        const youtubeData = await getYouTubeMetadata(content)
-        if (youtubeData?.title) {
-          metadata.title = youtubeData.title
-          metadata.description = youtubeData.description
-          metadata.thumbnail = youtubeData.thumbnail
-          metadata.platform = 'youtube'
+    try {
+      const enhancedMetadata = await fetchEnhancedMetadata(content)
+      if (enhancedMetadata) {
+        return {
+          title: enhancedMetadata.title,
+          description: enhancedMetadata.description,
+          thumbnail: enhancedMetadata.image,
+          image: enhancedMetadata.image, // 호환성을 위한 중복
+          domain: enhancedMetadata.domain,
+          platform: enhancedMetadata.platform,
+          favicon: enhancedMetadata.favicon,
+          ...(enhancedMetadata.videoId && { videoId: enhancedMetadata.videoId }),
+          ...(enhancedMetadata.duration && { duration: enhancedMetadata.duration }),
+          ...(enhancedMetadata.channelTitle && { channelTitle: enhancedMetadata.channelTitle })
         }
-      } catch (error) {
-        console.error('Failed to fetch YouTube metadata:', error)
       }
-    } else if (type === 'link' && isValidUrl(content)) {
-      try {
-        const webMetadata = await extractMetadata(content)
-        if (webMetadata) {
-          metadata.title = webMetadata.title
-          metadata.description = webMetadata.description
-          metadata.thumbnail = webMetadata.image
-          metadata.domain = webMetadata.domain
-          metadata.platform = 'web'
-        }
-      } catch (error) {
-        console.error('Failed to fetch web metadata:', error)
-      }
+    } catch (error) {
+      console.error('Failed to fetch enhanced metadata:', error)
     }
 
-    return metadata
+    return {}
   }
 
   // 파일 첨부 핸들러

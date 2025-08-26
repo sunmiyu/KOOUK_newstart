@@ -58,11 +58,12 @@
 - **뷰 모드**:
   - **그리드 뷰**: 2×2 또는 3×3 카드 형태 (기본)
   - **리스트 뷰**: 한 줄씩 나열 (제목 + 설명 + 메타정보)
-- **콘텐츠 카드**:
-  - **링크**: 파비콘 + 썸네일 + 제목 + 도메인명
-  - **메모**: 📝 아이콘 + 첫 줄 미리보기 + 작성일
-  - **이미지**: 썸네일 + 파일명 + 크기
-  - **문서**: 📄 아이콘 + 파일명 + 확장자 표시
+- **콘텐츠 카드 (향상된 프리뷰 시스템)**:
+  - **링크**: 실제 웹사이트 메타데이터 + 썸네일 + 실제 제목 + 도메인명
+  - **YouTube**: 실제 영상 썸네일 + 재생 버튼 + 채널명 + 재생시간
+  - **메모/문서**: 📝 아이콘 + 실제 내용 미리보기 (처음 2-3줄)
+  - **이미지**: 실제 이미지 썸네일 + 파일명
+  - **플랫폼별 특화**: GitHub(회색), Naver(녹색), YouTube(빨강) 등 브랜드 색상
 
 #### 3. **🛍️ Marketplace** - 집단 지성의 보물창고
 💡 **디자인 컨셉**: "세련된 디지털 갤러리"
@@ -134,6 +135,131 @@
 - **카드 디자인**: 둥근 모서리 + 연한 그림자
 - **폴더 아이콘**: 노란색 폴더 (#FCD34D)
 - **네비게이션**: 탭 형태 (My Folder, Bookmarks, Market Place)
+
+---
+
+## 🎨 **향상된 콘텐츠 프리뷰 시스템** ⭐ NEW
+
+### 📋 **시스템 개요**
+KOOUK의 **ContentCard**가 카카오톡과 같은 풍부한 링크 프리뷰를 제공하는 완전히 새로운 시스템입니다. 기존의 보수적인 이모지 아이콘에서 벗어나 **실제 웹사이트 데이터**를 활용한 유저 친화적 프리뷰를 구현했습니다.
+
+### 🔥 **핵심 기능**
+
+#### **1. 🌐 실시간 웹 메타데이터 스크래핑**
+```typescript
+// API: /api/metadata
+- Cheerio 기반 HTML 파싱
+- og:title, og:description, og:image 추출
+- 네이버 블로그/카페, 티스토리 특화 처리
+- 자동 이미지 URL 정규화
+```
+
+#### **2. 📹 YouTube 완전 지원**
+```typescript
+// API: /api/youtube  
+- YouTube Data API v3 연동 (선택적)
+- 실제 영상 제목, 썸네일, 채널명, 재생시간
+- 재생 버튼 오버레이 + 빨간색 YouTube 테마
+- API 키 없어도 폴백 데이터 제공
+```
+
+#### **3. 🎯 5단계 스마트 프리뷰 전략**
+```
+1순위: 실제 썸네일 (호버 시 확대 효과)
+2순위: YouTube 플랫폼 UI (▶️ + 빨간 배경)  
+3순위: 도메인 브랜드 색상 (GitHub 회색, Naver 녹색)
+4순위: 문서 내용 미리보기 (처음 2-3줄 텍스트)
+5순위: 기본 타입 아이콘 (기존 이모지)
+```
+
+#### **4. 🎨 플랫폼별 브랜드 테마**
+```typescript
+const platformColors = {
+  'youtube': 'bg-red-50 border-red-200',     // YouTube 빨강
+  'github': 'bg-gray-50 border-gray-200',    // GitHub 회색
+  'naver': 'bg-green-50 border-green-200',   // Naver 녹색
+  'tistory': 'bg-orange-50 border-orange-200' // Tistory 주황
+}
+```
+
+### 📊 **메타데이터 구조**
+```typescript
+interface EnhancedMetadata {
+  title: string           // 실제 웹페이지/영상 제목
+  description: string     // 설명
+  image: string          // 썸네일 이미지
+  domain: string         // 도메인명
+  platform: string       // youtube|web|naver|tistory|github
+  favicon: string        // 파비콘 URL
+  
+  // YouTube 전용
+  videoId?: string       // 영상 ID  
+  duration?: string      // "15:32" 형태
+  channelTitle?: string  // 채널명
+  
+  // 문서 전용
+  contentPreview?: string // 처음 300자 미리보기
+}
+```
+
+### 🔧 **구현 컴포넌트**
+
+#### **Core Files**
+- `src/app/api/metadata/route.ts` - 웹 스크래핑 API
+- `src/app/api/youtube/route.ts` - YouTube 데이터 API
+- `src/utils/enhancedMetadata.ts` - 메타데이터 유틸리티
+- `src/components/ui/ContentCard.tsx` - 향상된 카드 컴포넌트
+
+#### **Database Schema**
+```sql
+-- metadata 컬럼 (JSON)에 저장되는 구조
+{
+  "title": "React 공식 문서",
+  "description": "React 라이브러리 공식 문서",
+  "image": "https://react.dev/image.png", 
+  "domain": "react.dev",
+  "platform": "web",
+  "favicon": "https://react.dev/favicon.ico"
+}
+```
+
+### 🎯 **사용자 경험 개선사항**
+
+#### **Before (기존)**
+- 단순 이모지 아이콘 (🔗, 📝, 📄)
+- 도메인명만 표시
+- 썸네일 없음
+
+#### **After (새로운 시스템)**
+- ✅ **YouTube**: "코딩애플 - React 완전정복" + 실제 썸네일 + "2:15:30"
+- ✅ **웹사이트**: "React 공식 문서" + 실제 이미지 + react.dev
+- ✅ **GitHub**: 회색 브랜드 테마 + 🐙 아이콘
+- ✅ **문서**: 실제 내용 미리보기 (처음 2-3줄)
+
+### ⚡ **성능 최적화**
+
+#### **에러 처리**
+- 이미지 로드 실패 시 자동 폴백
+- API 호출 실패 시 기본 UI 유지
+- 15초 타임아웃으로 사용자 대기시간 최소화
+
+#### **캐싱 전략**
+- 메타데이터는 database에 영구 저장
+- 이미지는 브라우저 캐싱 활용
+- 중복 API 호출 방지
+
+### 🚨 **주의사항**
+
+#### **개발자 가이드**
+1. **새로운 플랫폼 추가시**: `src/utils/enhancedMetadata.ts`의 `getDomainInfo()` 함수에 도메인 정보 추가
+2. **메타데이터 필드 추가시**: `EnhancedMetadata` 인터페이스 먼저 수정
+3. **ContentCard 수정시**: 5단계 프리뷰 전략 순서 유지
+4. **API 수정시**: 폴백 데이터 반드시 제공
+
+#### **데이터베이스**
+- 기존 `metadata` JSON 컬럼 활용 (호환성 유지)
+- 새로운 테이블 생성 불필요
+- 선택적으로 `enhanced_metadata_schema.sql` 실행 가능
 
 ---
 

@@ -1,75 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { extractYouTubeVideoId } from '@/utils/youtube'
-
-// 안전한 HTML 엔티티 디코딩 함수
-function decodeHTMLEntities(text: string): string {
-  if (!text) return ''
-  
-  const entityMap: { [key: string]: string } = {
-    '&amp;': '&',
-    '&lt;': '<', 
-    '&gt;': '>',
-    '&quot;': '"',
-    '&#039;': "'",
-    '&#39;': "'",
-    '&apos;': "'",
-    '&nbsp;': ' '
-  }
-  
-  let decoded = text
-  
-  for (const [entity, char] of Object.entries(entityMap)) {
-    decoded = decoded.replace(new RegExp(entity, 'g'), char)
-  }
-  
-  return decoded.trim()
-}
-
-// HTML 스크래핑으로 YouTube 제목 추출
-async function scrapeYouTubeTitle(url: string) {
-  try {
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      }
-    })
-    
-    if (!response.ok) throw new Error('Failed to fetch')
-    
-    const html = await response.text()
-    
-    // ytInitialPlayerResponse에서 제목 추출
-    const playerResponseMatch = html.match(/ytInitialPlayerResponse\s*=\s*({.+?});/)
-    if (playerResponseMatch) {
-      try {
-        const playerResponse = JSON.parse(playerResponseMatch[1])
-        const title = playerResponse?.videoDetails?.title
-        if (title) {
-          return title
-        }
-      } catch {
-        console.log('Failed to parse ytInitialPlayerResponse')
-      }
-    }
-    
-    // title 태그에서 추출
-    const titleMatch = html.match(/<title>([^<]+)<\/title>/)
-    if (titleMatch) {
-      let title = titleMatch[1]
-      title = title.replace(/ - YouTube$/, '')
-      title = decodeHTMLEntities(title)
-      
-      if (title && title !== 'YouTube') {
-        return title
-      }
-    }
-    
-    return null
-  } catch (error) {
-    console.error('YouTube scraping error:', error)
-    return null
-  }
-}
 
 export async function GET(request: NextRequest) {
   try {
@@ -77,34 +6,134 @@ export async function GET(request: NextRequest) {
     const url = searchParams.get('url')
     
     if (!url) {
-      return NextResponse.json({ error: 'URL parameter is required' }, { status: 400 })
+      return NextResponse.json({ error: 'URL is required' }, { status: 400 })
     }
 
+    // YouTube Video ID 추출
     const videoId = extractYouTubeVideoId(url)
     if (!videoId) {
       return NextResponse.json({ error: 'Invalid YouTube URL' }, { status: 400 })
     }
 
-    let videoInfo = {
-      title: undefined as string | undefined,
-      description: undefined as string | undefined,
-      duration: undefined as string | undefined,
-      channelTitle: undefined as string | undefined,
-      publishedAt: undefined as string | undefined,
-      thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
+    // YouTube API 키가 없는 경우 폴백 데이터 반환
+    if (!process.env.YOUTUBE_API_KEY) {
+      return NextResponse.json({
+        videoId,
+        title: `YouTube Video ${videoId}`,
+        description: '',
+        thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+        channelTitle: '',
+        duration: '',
+        publishedAt: '',
+        url: url
+      })
     }
 
-    // 스크래핑으로 제목 가져오기
-    const scrapedTitle = await scrapeYouTubeTitle(url)
-    if (scrapedTitle) {
-      videoInfo.title = scrapedTitle
-    } else {
-      videoInfo.title = `YouTube Video ${videoId}`
+    // YouTube Data API v3 호출
+    const apiUrl = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${process.env.YOUTUBE_API_KEY}&part=snippet,contentDetails,statistics`
+    
+    const response = await fetch(apiUrl)
+    if (!response.ok) {
+      throw new Error('YouTube API request failed')
     }
 
-    return NextResponse.json(videoInfo)
+    const data = await response.json()
+    
+    if (!data.items || data.items.length === 0) {
+      return NextResponse.json({ error: 'Video not found' }, { status: 404 })
+    }
+
+    const video = data.items[0]
+    const snippet = video.snippet
+    const contentDetails = video.contentDetails
+    
+    // Duration 파싱 (PT4M13S -> 4:13 형식)
+    const duration = parseDuration(contentDetails.duration)
+    
+    // 썸네일 우선순위: maxres > high > medium > default
+    const thumbnails = snippet.thumbnails
+    const thumbnail = 
+      thumbnails.maxresdefault?.url ||
+      thumbnails.high?.url ||
+      thumbnails.medium?.url ||
+      thumbnails.default?.url ||
+      `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
+
+    return NextResponse.json({
+      videoId,
+      title: snippet.title || '',
+      description: snippet.description || '',
+      thumbnail,
+      channelTitle: snippet.channelTitle || '',
+      duration,
+      publishedAt: snippet.publishedAt || '',
+      viewCount: video.statistics?.viewCount || '0',
+      url: url
+    })
+
   } catch (error) {
-    console.error('YouTube processing error:', error)
-    return NextResponse.json({ error: 'Failed to fetch video information' }, { status: 500 })
+    console.error('YouTube API error:', error)
+    
+    // 에러 시 폴백 데이터 반환
+    const url_param = new URL(request.url).searchParams.get('url')
+    const videoId = url_param ? extractYouTubeVideoId(url_param) : null
+    
+    if (videoId) {
+      return NextResponse.json({
+        videoId,
+        title: `YouTube Video ${videoId}`,
+        description: '',
+        thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+        channelTitle: '',
+        duration: '',
+        publishedAt: '',
+        url: url_param
+      })
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to fetch YouTube data' }, 
+      { status: 500 }
+    )
+  }
+}
+
+// YouTube Video ID 추출 함수
+function extractYouTubeVideoId(url: string): string | null {
+  const patterns = [
+    /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/,
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
+    /(?:https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})/
+  ]
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern)
+    if (match && match[1]) {
+      return match[1]
+    }
+  }
+
+  return null
+}
+
+// YouTube Duration 파싱 (PT4M13S -> 4:13)
+function parseDuration(duration: string): string {
+  try {
+    const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
+    if (!match) return ''
+
+    const hours = parseInt(match[1] || '0')
+    const minutes = parseInt(match[2] || '0')
+    const seconds = parseInt(match[3] || '0')
+
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    } else {
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+  } catch {
+    return ''
   }
 }

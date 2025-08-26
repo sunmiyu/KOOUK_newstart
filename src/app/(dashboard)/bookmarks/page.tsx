@@ -13,6 +13,8 @@ export default function BookmarksPage() {
   const [newCategoryName, setNewCategoryName] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [categoryToDelete, setCategoryToDelete] = useState<{id: string, name: string} | null>(null)
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
+  const [editingCategoryName, setEditingCategoryName] = useState('')
   
   // 기본 카테고리 (삭제 불가)
   const defaultCategories = [
@@ -26,8 +28,8 @@ export default function BookmarksPage() {
   
   // 커스텀 카테고리 (사용자가 추가한 것들)
   const [customCategories, setCustomCategories] = useState([
-    { id: 'custom-1', name: '재밌는 사이트', count: 12, isDefault: false },
-    { id: 'custom-2', name: '공부할 사이트', count: 8, isDefault: false },
+    { id: 'custom-1', name: '개발 도구', count: 5, isDefault: false },
+    { id: 'custom-2', name: '유튜브 채널', count: 4, isDefault: false },
   ])
   
   // 전체 카테고리 목록
@@ -76,6 +78,32 @@ export default function BookmarksPage() {
     setCategoryToDelete(null)
   }
 
+  const handleStartEditingCategory = (categoryId: string, categoryName: string) => {
+    setEditingCategoryId(categoryId)
+    setEditingCategoryName(categoryName)
+  }
+
+  const handleSaveEditingCategory = () => {
+    if (!editingCategoryName.trim()) return
+
+    setCustomCategories(prev => 
+      prev.map(cat => 
+        cat.id === editingCategoryId 
+          ? { ...cat, name: editingCategoryName.trim() }
+          : cat
+      )
+    )
+
+    setEditingCategoryId(null)
+    setEditingCategoryName('')
+    console.log('카테고리명 수정됨:', editingCategoryName)
+  }
+
+  const handleCancelEditingCategory = () => {
+    setEditingCategoryId(null)
+    setEditingCategoryName('')
+  }
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -108,13 +136,31 @@ export default function BookmarksPage() {
             }`}
           >
             <div className="flex items-center space-x-2">
-              <span className={`text-sm font-medium ${
-                selectedCategory === category.id
-                  ? 'text-blue-600'
-                  : 'text-gray-700 group-hover:text-gray-900'
-              }`}>
-                {category.name}
-              </span>
+              {editingCategoryId === category.id ? (
+                <input
+                  type="text"
+                  value={editingCategoryName}
+                  onChange={(e) => setEditingCategoryName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSaveEditingCategory()
+                    } else if (e.key === 'Escape') {
+                      handleCancelEditingCategory()
+                    }
+                  }}
+                  onBlur={handleSaveEditingCategory}
+                  className="text-sm font-medium bg-white border border-blue-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 min-w-20"
+                  autoFocus
+                />
+              ) : (
+                <span className={`text-sm font-medium ${
+                  selectedCategory === category.id
+                    ? 'text-blue-600'
+                    : 'text-gray-700 group-hover:text-gray-900'
+                }`}>
+                  {category.name}
+                </span>
+              )}
               <span className={`text-xs px-2 py-1 rounded-full ${
                 selectedCategory === category.id
                   ? 'bg-blue-100 text-blue-600'
@@ -123,20 +169,34 @@ export default function BookmarksPage() {
                 {category.count}
               </span>
               
-              {/* 커스텀 카테고리에만 삭제 버튼 표시 */}
+              {/* 커스텀 카테고리에만 편집/삭제 버튼 표시 */}
               {!category.isDefault && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDeleteCategory(category.id, category.name)
-                  }}
-                  className="ml-1 w-4 h-4 rounded-full bg-gray-400 text-white flex items-center justify-center hover:bg-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                  title={`"${category.name}" 카테고리 삭제`}
-                >
-                  <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
+                <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleStartEditingCategory(category.id, category.name)
+                    }}
+                    className="w-4 h-4 rounded-full bg-gray-400 text-white flex items-center justify-center hover:bg-blue-500 transition-colors"
+                    title={`"${category.name}" 카테고리명 수정`}
+                  >
+                    <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleDeleteCategory(category.id, category.name)
+                    }}
+                    className="w-4 h-4 rounded-full bg-gray-400 text-white flex items-center justify-center hover:bg-red-500 transition-colors"
+                    title={`"${category.name}" 카테고리 삭제`}
+                  >
+                    <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
               )}
             </div>
           </button>
@@ -236,47 +296,117 @@ export default function BookmarksPage() {
 
       {/* Bookmarks Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {/* Sample bookmarks */}
+        {/* Real example bookmarks */}
         {[
           {
-            title: "React Official Documentation",
+            title: "React 공식 문서",
             url: "https://react.dev",
-            description: "The official React documentation with hooks, components, and best practices for building modern web applications.",
+            description: "React의 최신 공식 문서. Hooks, Components, 성능 최적화 등 모든 내용을 다룹니다.",
             domain: "react.dev",
-            favicon: "🔷",
+            favicon: "⚛️",
             image: "https://react.dev/images/home/conf2021/cover.svg",
             isFavorite: true,
-            addedAt: "2 days ago"
+            addedAt: "2 days ago",
+            category: "tech"
           },
           {
-            title: "Tailwind CSS Framework",
-            url: "https://tailwindcss.com",
-            description: "A utility-first CSS framework packed with classes to build any design, directly in your markup.",
-            domain: "tailwindcss.com",
+            title: "Figma - 협업 디자인 도구",
+            url: "https://figma.com",
+            description: "실시간 협업이 가능한 웹 기반 디자인 도구. UI/UX 디자인의 필수템!",
+            domain: "figma.com",
             favicon: "🎨",
-            image: "https://picsum.photos/400/200?random=2",
-            isFavorite: false,
-            addedAt: "1 week ago"
-          },
-          {
-            title: "Next.js App Router Guide",
-            url: "https://nextjs.org/docs",
-            description: "Learn about the new App Router in Next.js 13+ with server components and improved routing.",
-            domain: "nextjs.org",
-            favicon: "⚡",
-            image: "https://picsum.photos/400/200?random=3",
+            image: "https://picsum.photos/400/200?random=figma",
             isFavorite: true,
-            addedAt: "3 days ago"
+            addedAt: "1 week ago",
+            category: "custom-1" // 개발 도구
           },
           {
-            title: "GitHub Copilot Features",
+            title: "노마드 코더 - React Native 완전정복",
+            url: "https://www.youtube.com/c/nomadcoders",
+            description: "실무에서 바로 쓸 수 있는 React Native 강의. 무료로 배우는 앱 개발!",
+            domain: "youtube.com",
+            favicon: "📺",
+            image: "https://picsum.photos/400/200?random=nomad",
+            isFavorite: true,
+            addedAt: "3 days ago",
+            category: "custom-2" // 유튜브 채널
+          },
+          {
+            title: "GitHub Copilot",
             url: "https://github.com/features/copilot",
-            description: "AI pair programmer that helps you write code faster with whole-line and full function suggestions.",
+            description: "AI가 코드를 작성해주는 페어 프로그래밍 도구. 개발 생산성이 확실히 올라감!",
             domain: "github.com",
-            favicon: "🐙",
-            image: "https://picsum.photos/400/200?random=4",
+            favicon: "🤖",
+            image: "https://picsum.photos/400/200?random=copilot",
             isFavorite: false,
-            addedAt: "1 day ago"
+            addedAt: "1 day ago",
+            category: "custom-1" // 개발 도구
+          },
+          {
+            title: "드림코딩 by 엘리",
+            url: "https://www.youtube.com/c/DreamCoding",
+            description: "프론트엔드 개발자가 되고 싶다면 꼭 봐야 할 채널. 실무 경험 가득한 꿀팁들!",
+            domain: "youtube.com",
+            favicon: "💻",
+            image: "https://picsum.photos/400/200?random=dreamcoding",
+            isFavorite: true,
+            addedAt: "5 days ago",
+            category: "custom-2" // 유튜브 채널
+          },
+          {
+            title: "Notion - 올인원 워크스페이스",
+            url: "https://notion.so",
+            description: "노트, 문서, 프로젝트 관리까지 한 번에! 개인부터 팀까지 모든 업무 정리",
+            domain: "notion.so",
+            favicon: "📝",
+            image: "https://picsum.photos/400/200?random=notion",
+            isFavorite: false,
+            addedAt: "1 week ago",
+            category: "custom-1" // 개발 도구
+          },
+          {
+            title: "MDN Web Docs",
+            url: "https://developer.mozilla.org",
+            description: "웹 개발자의 바이블! HTML, CSS, JavaScript 등 웹 기술의 모든 것",
+            domain: "developer.mozilla.org",
+            favicon: "📚",
+            image: "https://picsum.photos/400/200?random=mdn",
+            isFavorite: true,
+            addedAt: "2 weeks ago",
+            category: "tech"
+          },
+          {
+            title: "생활코딩",
+            url: "https://www.youtube.com/c/egoing2",
+            description: "프로그래밍 기초부터 차근차근! 이고잉님의 명강의로 기초를 탄탄히",
+            domain: "youtube.com",
+            favicon: "🎓",
+            image: "https://picsum.photos/400/200?random=opentutorials",
+            isFavorite: false,
+            addedAt: "1 week ago",
+            category: "custom-2" // 유튜브 채널
+          },
+          {
+            title: "Vercel - 배포 플랫폼",
+            url: "https://vercel.com",
+            description: "Next.js 프로젝트 배포의 최강자! 자동 배포, CDN, 도메인까지 원클릭",
+            domain: "vercel.com",
+            favicon: "▲",
+            image: "https://picsum.photos/400/200?random=vercel",
+            isFavorite: true,
+            addedAt: "4 days ago",
+            category: "custom-1" // 개발 도구
+          },
+          {
+            title: "Can I Use",
+            url: "https://caniuse.com",
+            description: "브라우저 호환성 체크의 필수 사이트! 이 기능 IE에서 될까? 궁금할 때",
+            domain: "caniuse.com",
+            favicon: "✅",
+            image: "https://picsum.photos/400/200?random=caniuse",
+            isFavorite: false,
+            addedAt: "6 days ago",
+            category: "tech"
           }
         ].map((bookmark, index) => (
           <div 
