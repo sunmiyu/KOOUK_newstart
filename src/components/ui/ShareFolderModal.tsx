@@ -376,25 +376,67 @@ export default function ShareFolderModal({
             />
           </div>
 
-          {/* Changes Preview (for updates) */}
+          {/* Current Version Status (for shared folders) */}
           {folder?.shared_status !== 'private' && (
             <div className="mb-6">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">변경사항 미리보기</h3>
-              <div className={`rounded-lg p-4 border-2 border-dashed ${
+              <h3 className="text-sm font-medium text-gray-700 mb-3">📋 현재 공유 버전 상태</h3>
+              
+              {/* Up to Date Status */}
+              <div className={`rounded-lg p-4 border-2 ${
                 hasChanges ? 'bg-orange-50 border-orange-200' : 'bg-green-50 border-green-200'
               }`}>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">
-                    {hasChanges ? '🔄' : '✅'}
-                  </span>
-                  <span className="font-medium text-gray-900">
-                    {hasChanges ? changesSummary : '변경사항 없음'}
-                  </span>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    hasChanges ? 'bg-orange-200' : 'bg-green-200'
+                  }`}>
+                    <span className="text-lg">
+                      {hasChanges ? '🔄' : '✅'}
+                    </span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">
+                      {hasChanges ? 'Has Updates' : 'Up to date'}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {hasChanges ? changesSummary : '마켓플레이스와 동기화됨'}
+                    </div>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600">
+                
+                {/* Current Version Info */}
+                <div className="bg-white rounded-lg p-3 border border-gray-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">현재 버전 기준</span>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      hasChanges 
+                        ? 'bg-orange-100 text-orange-700' 
+                        : 'bg-green-100 text-green-700'
+                    }`}>
+                      {hasChanges ? 'Outdated' : 'Latest'}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {folder.last_shared_at ? (
+                      <>
+                        📅 {new Date(folder.last_shared_at).toLocaleDateString('ko-KR', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })} {new Date(folder.last_shared_at).toLocaleTimeString('ko-KR', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })} 기준으로 공유
+                      </>
+                    ) : (
+                      '📅 아직 공유되지 않음'
+                    )}
+                  </div>
+                </div>
+                
+                <p className="text-xs text-gray-500 mt-2">
                   {hasChanges 
-                    ? '새로운 버전이 생성되어 마켓플레이스에서 업데이트됩니다.' 
-                    : '현재 공유된 버전과 동일합니다.'
+                    ? '💡 업데이트하면 새로운 버전이 마켓플레이스에 반영됩니다.' 
+                    : '💡 현재 공유된 버전과 원본 폴더가 동일합니다.'
                   }
                 </p>
               </div>

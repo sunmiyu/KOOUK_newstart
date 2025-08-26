@@ -8,14 +8,19 @@ interface AddBookmarkModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess?: (bookmark: any) => void
+  categories?: Array<{ id: string; name: string; isDefault?: boolean }>
+  defaultCategory?: string
 }
 
 export default function AddBookmarkModal({
   isOpen,
   onClose,
-  onSuccess
+  onSuccess,
+  categories = [],
+  defaultCategory = 'tech'
 }: AddBookmarkModalProps) {
   const [url, setUrl] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState(defaultCategory)
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState('')
 
@@ -55,7 +60,8 @@ export default function AddBookmarkModal({
               image: youtubeData.thumbnail,
               url: processedUrl,
               domain: new URL(processedUrl).hostname,
-              platform: 'youtube'
+              platform: 'youtube',
+              category: selectedCategory
             }
           }
         } catch (error) {
@@ -74,7 +80,8 @@ export default function AddBookmarkModal({
               image: webMetadata.image || '',
               url: processedUrl,
               domain: webMetadata.domain,
-              platform: 'web'
+              platform: 'web',
+              category: selectedCategory
             }
           }
         } catch (error) {
@@ -91,7 +98,8 @@ export default function AddBookmarkModal({
           image: '',
           url: processedUrl,
           domain: urlObj.hostname,
-          platform: 'web'
+          platform: 'web',
+          category: selectedCategory
         }
       }
 
@@ -102,6 +110,7 @@ export default function AddBookmarkModal({
 
       // 모달 닫기 및 초기화
       setUrl('')
+      setSelectedCategory(defaultCategory)
       setError('')
       onClose()
 
@@ -179,6 +188,30 @@ export default function AddBookmarkModal({
               </p>
             )}
           </div>
+
+          {/* Category Selection */}
+          {categories.length > 0 && (
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                카테고리
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                disabled={isProcessing}
+              >
+                {categories
+                  .filter(cat => cat.id !== 'all') // 'All' 카테고리는 제외
+                  .map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                    {category.isDefault ? '' : ' (커스텀)'}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="text-xs text-gray-500 mb-6">
             <p className="mb-2">지원하는 사이트:</p>

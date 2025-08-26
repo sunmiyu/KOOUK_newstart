@@ -6,7 +6,7 @@ export default function MarketplacePage() {
   const [selectedCollection, setSelectedCollection] = useState<any>(null)
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortBy, setSortBy] = useState('popular')
+  const [sortBy, setSortBy] = useState('recent')
   
   const categories = [
     { id: 'all', name: 'All', count: 1247 },
@@ -17,9 +17,13 @@ export default function MarketplacePage() {
     { id: 'resources', name: 'Resources', count: 98 }
   ]
 
-  const sortOptions = [
-    { value: 'popular', label: 'Most Popular' },
+  const mainSortOptions = [
     { value: 'recent', label: 'Most Recent' },
+    { value: 'category', label: 'By Category' }
+  ]
+
+  const popularOptions = [
+    { value: 'popular', label: 'Most Popular' },
     { value: 'downloads', label: 'Most Downloads' },
     { value: 'likes', label: 'Most Liked' }
   ]
@@ -39,86 +43,66 @@ export default function MarketplacePage() {
         </div>
       </div>
 
-      {/* Featured Section */}
-      <div className="bg-gray-800 rounded-xl p-8 mb-8 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold mb-2">🌟 Featured Collection</h2>
-            <p className="text-gray-300 mb-4">
-              Curated by the community • This week's top pick
-            </p>
+
+      {/* Main Layout: Left Content + Right Sidebar */}
+      <div className="flex gap-8">
+        {/* Main Content */}
+        <div className="flex-1">
+          {/* Filters */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-6">
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-full border transition-colors ${
+                    selectedCategory === category.id
+                      ? 'border-gray-500 bg-gray-50 text-gray-800'
+                      : 'border-gray-300 hover:border-gray-400 text-gray-700'
+                  }`}
+                >
+                  <span className="text-sm font-medium">{category.name}</span>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    selectedCategory === category.id
+                      ? 'bg-gray-100 text-gray-800'
+                      : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    {category.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+            
             <div className="flex items-center space-x-4">
-              <span className="bg-white/20 px-3 py-1 rounded-full text-sm">Design Resources</span>
-              <span className="text-gray-400">•</span>
-              <span className="text-gray-400">245 downloads</span>
-              <span className="text-gray-400">•</span>
-              <span className="text-gray-400">89 likes</span>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search collections..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500"
+                />
+                <svg className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                </svg>
+              </div>
+              
+              <select 
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              >
+                {mainSortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
-          <button 
-            onClick={() => console.log('Featured collection clicked')}
-            className="bg-white text-gray-800 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-          >
-            View Collection
-          </button>
-        </div>
-      </div>
 
-      {/* Filters */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-6">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-full border transition-colors ${
-                selectedCategory === category.id
-                  ? 'border-gray-500 bg-gray-50 text-gray-800'
-                  : 'border-gray-300 hover:border-gray-400 text-gray-700'
-              }`}
-            >
-              <span className="text-sm font-medium">{category.name}</span>
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                selectedCategory === category.id
-                  ? 'bg-gray-100 text-gray-800'
-                  : 'bg-gray-100 text-gray-600'
-              }`}>
-                {category.count}
-              </span>
-            </button>
-          ))}
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search collections..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500"
-            />
-            <svg className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-            </svg>
-          </div>
-          
-          <select 
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
-          >
-            {sortOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Collections Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {/* Collections Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[
           {
             name: "Essential Dev Tools 2024",
@@ -263,6 +247,67 @@ export default function MarketplacePage() {
             </div>
           </div>
         ))}
+          </div>
+        </div>
+
+        {/* Right Sidebar - Popular Collections */}
+        <div className="w-80 flex-shrink-0">
+          <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <span className="mr-2">🔥</span>
+              Popular Collections
+            </h3>
+            
+            {/* Popular Tabs */}
+            <div className="flex flex-col space-y-2 mb-6">
+              {popularOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => setSortBy(option.value)}
+                  className={`text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                    sortBy === option.value
+                      ? 'bg-gray-100 text-gray-900 font-medium'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            
+            {/* Mini Popular List */}
+            <div className="space-y-4">
+              {[
+                { name: "UI Design System", downloads: 2100, likes: 456, thumbnail: "🎨" },
+                { name: "Remote Work Tools", downloads: 1800, likes: 312, thumbnail: "🏠" },
+                { name: "Dev Tools 2024", downloads: 1200, likes: 234, thumbnail: "💻" },
+                { name: "React Resources", downloads: 856, likes: 189, thumbnail: "📚" },
+                { name: "Photography Guide", downloads: 934, likes: 267, thumbnail: "📷" }
+              ].slice(0, 5).map((item, index) => (
+                <div key={index} className="flex items-center space-x-3 p-3 border border-gray-100 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                  <span className="text-2xl">{item.thumbnail}</span>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-medium text-gray-900 truncate">{item.name}</h4>
+                    <div className="flex items-center space-x-3 text-xs text-gray-500 mt-1">
+                      <span>⬇️ {item.downloads}</span>
+                      <span>❤️ {item.likes}</span>
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-400">#{index + 1}</div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-4">
+              <button 
+                onClick={() => console.log('View all popular')}
+                className="w-full text-center text-sm text-blue-600 hover:text-blue-700 py-2"
+              >
+                View All Popular →
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

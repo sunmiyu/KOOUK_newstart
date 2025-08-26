@@ -182,7 +182,10 @@ export default function DashboardPage() {
       {/* Usage Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <div className="lg:col-span-1">
-          <UsageCard onUpgradeClick={handleUpgradeClick} />
+          <UsageCard 
+            onUpgradeClick={handleUpgradeClick}
+            showUpgradeButton={userUsage?.plan === 'free'}
+          />
         </div>
         
         {/* Recent Activity moved here */}
@@ -274,73 +277,60 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Pro Features Preview */}
+        {/* Pro vs Free Comparison - Free 사용자만 */}
         {userUsage?.plan === 'free' && (
-          <div className="bg-gray-800 rounded-lg shadow-sm text-white">
+          <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg shadow-sm border border-blue-200">
             <div className="p-6">
-              <h2 className="text-lg font-semibold mb-4">🎆 Pro 플랜으로 업그레이드</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+                <span className="mr-2">⚡</span>Free vs Pro 비교
+              </h2>
+              
+              {/* 비교 테이블 */}
               <div className="space-y-3 mb-4">
-                <div className="flex items-center">
-                  <span className="text-2xl mr-3">💾</span>
-                  <span className="text-sm">저장공간 10GB (10배 확장)</span>
+                <div className="grid grid-cols-3 gap-4 text-sm font-medium text-gray-700 pb-2 border-b border-gray-300">
+                  <div></div>
+                  <div className="text-center">Free</div>
+                  <div className="text-center text-blue-600">Pro</div>
                 </div>
-                <div className="flex items-center">
-                  <span className="text-2xl mr-3">📁</span>
-                  <span className="text-sm">폴더 50개 (2.5배 확장)</span>
+                
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-center">
+                    <span className="mr-2">💾</span>저장공간
+                  </div>
+                  <div className="text-center text-gray-600">1GB</div>
+                  <div className="text-center text-blue-600 font-medium">10GB</div>
                 </div>
-                <div className="flex items-center">
-                  <span className="text-2xl mr-3">💰</span>
-                  <span className="text-sm">유료 마켓플레이스 판매</span>
+                
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-center">
+                    <span className="mr-2">📁</span>폴더 개수
+                  </div>
+                  <div className="text-center text-gray-600">20개</div>
+                  <div className="text-center text-blue-600 font-medium">50개</div>
                 </div>
-                <div className="flex items-center">
-                  <span className="text-2xl mr-3">📊</span>
-                  <span className="text-sm">고급 분석 & 수익 통계</span>
+                
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-center">
+                    <span className="mr-2">💰</span>유료 판매
+                  </div>
+                  <div className="text-center text-gray-400">✕</div>
+                  <div className="text-center text-blue-600 font-medium">✓</div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="flex items-center">
+                    <span className="mr-2">📊</span>고급 분석
+                  </div>
+                  <div className="text-center text-gray-400">✕</div>
+                  <div className="text-center text-blue-600 font-medium">✓</div>
                 </div>
               </div>
-              <button
-                onClick={() => {
-                  setUpgradeReason('paid_selling')
-                  setShowUpgradeModal(true)
-                }}
-                className="w-full bg-white text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors font-medium"
-              >
-                <div className="flex items-center justify-center">
-                  <span className="mr-2">🚀</span>
-                  <span>공개 예정 - 기대해주세요!</span>
-                </div>
-              </button>
-              <p className="text-xs text-gray-300 text-center mt-2">
-                Pro 플랜은 공개 예정입니다. 공개 시 우선 알림을 드릴게요!
-              </p>
-            </div>
-          </div>
-        )}
-        
-        {userUsage?.plan === 'pro' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">🌟 Pro 기능</h2>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <div className="flex items-center">
-                    <span className="text-lg mr-2">💰</span>
-                    <span className="text-sm font-medium text-green-800">유료 판매 활성</span>
-                  </div>
-                  <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">사용 가능</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-                  <div className="flex items-center">
-                    <span className="text-lg mr-2">📊</span>
-                    <span className="text-sm font-medium text-purple-800">고급 분석</span>
-                  </div>
-                  <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded-full">사용 가능</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <div className="flex items-center">
-                    <span className="text-lg mr-2">🌨️</span>
-                    <span className="text-sm font-medium text-blue-800">우선 지원</span>
-                  </div>
-                  <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">사용 가능</span>
+
+              <div className="bg-white rounded-lg p-4 border border-blue-200">
+                <div className="text-center">
+                  <div className="text-blue-600 text-2xl mb-2">🚀</div>
+                  <p className="text-sm font-medium text-gray-800 mb-1">Pro 플랜 공개 예정!</p>
+                  <p className="text-xs text-gray-600">더 강력한 기능으로 돌아올게요</p>
                 </div>
               </div>
             </div>

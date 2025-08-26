@@ -9,19 +9,71 @@ export default function BookmarksPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [sortBy, setSortBy] = useState('recent')
+  const [showAddCategory, setShowAddCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [categoryToDelete, setCategoryToDelete] = useState<{id: string, name: string} | null>(null)
   
-  const categories = [
-    { id: 'all', name: 'All', count: 247 },
-    { id: 'tech', name: 'Tech', count: 89 },
-    { id: 'design', name: 'Design', count: 56 },
-    { id: 'news', name: 'News', count: 34 },
-    { id: 'education', name: 'Education', count: 28 },
-    { id: 'entertainment', name: 'Entertainment', count: 40 }
+  // 기본 카테고리 (삭제 불가)
+  const defaultCategories = [
+    { id: 'all', name: 'All', count: 247, isDefault: true },
+    { id: 'tech', name: 'Tech', count: 89, isDefault: true },
+    { id: 'design', name: 'Design', count: 56, isDefault: true },
+    { id: 'news', name: 'News', count: 34, isDefault: true },
+    { id: 'education', name: 'Education', count: 28, isDefault: true },
+    { id: 'entertainment', name: 'Entertainment', count: 40, isDefault: true }
   ]
+  
+  // 커스텀 카테고리 (사용자가 추가한 것들)
+  const [customCategories, setCustomCategories] = useState([
+    { id: 'custom-1', name: '재밌는 사이트', count: 12, isDefault: false },
+    { id: 'custom-2', name: '공부할 사이트', count: 8, isDefault: false },
+  ])
+  
+  // 전체 카테고리 목록
+  const allCategories = [...defaultCategories, ...customCategories]
 
   const handleBookmarkSuccess = (bookmarkData: any) => {
     console.log('새 북마크 추가됨:', bookmarkData)
     // TODO: 실제 북마크 저장 로직 구현
+  }
+
+  const handleAddCategory = () => {
+    if (!newCategoryName.trim()) return
+    
+    const newCategory = {
+      id: `custom-${Date.now()}`,
+      name: newCategoryName.trim(),
+      count: 0,
+      isDefault: false
+    }
+    
+    setCustomCategories(prev => [...prev, newCategory])
+    setNewCategoryName('')
+    setShowAddCategory(false)
+    console.log('새 카테고리 추가됨:', newCategory.name)
+  }
+
+  const handleDeleteCategory = (categoryId: string, categoryName: string) => {
+    setCategoryToDelete({ id: categoryId, name: categoryName })
+    setShowDeleteConfirm(true)
+  }
+
+  const confirmDeleteCategory = () => {
+    if (!categoryToDelete) return
+    
+    setCustomCategories(prev => prev.filter(cat => cat.id !== categoryToDelete.id))
+    
+    // 삭제된 카테고리가 현재 선택된 카테고리라면 'all'로 변경
+    if (selectedCategory === categoryToDelete.id) {
+      setSelectedCategory('all')
+    }
+    
+    console.log('카테고리 삭제됨:', categoryToDelete.name)
+    
+    // 상태 초기화
+    setShowDeleteConfirm(false)
+    setCategoryToDelete(null)
   }
 
   return (
@@ -44,12 +96,12 @@ export default function BookmarksPage() {
       </div>
 
       {/* Category Tabs */}
-      <div className="flex items-center space-x-6 border-b border-gray-200 mb-6">
-        {categories.map((category) => (
+      <div className="flex items-center space-x-6 border-b border-gray-200 mb-6 overflow-x-auto">
+        {allCategories.map((category) => (
           <button
             key={category.id}
             onClick={() => setSelectedCategory(category.id)}
-            className={`pb-4 border-b-2 transition-colors group ${
+            className={`pb-4 border-b-2 transition-colors group flex-shrink-0 relative ${
               selectedCategory === category.id
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent hover:border-gray-300'
@@ -70,9 +122,75 @@ export default function BookmarksPage() {
               }`}>
                 {category.count}
               </span>
+              
+              {/* 커스텀 카테고리에만 삭제 버튼 표시 */}
+              {!category.isDefault && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDeleteCategory(category.id, category.name)
+                  }}
+                  className="ml-1 w-4 h-4 rounded-full bg-gray-400 text-white flex items-center justify-center hover:bg-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                  title={`"${category.name}" 카테고리 삭제`}
+                >
+                  <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              )}
             </div>
           </button>
         ))}
+        
+        {/* 카테고리 추가 버튼 또는 입력창 */}
+        {showAddCategory ? (
+          <div className="flex items-center space-x-2 pb-4 flex-shrink-0">
+            <input
+              type="text"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleAddCategory()
+                if (e.key === 'Escape') {
+                  setShowAddCategory(false)
+                  setNewCategoryName('')
+                }
+              }}
+              placeholder="카테고리 이름..."
+              className="w-32 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              autoFocus
+            />
+            <button
+              onClick={handleAddCategory}
+              className="w-6 h-6 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+              title="추가"
+            >
+              ✓
+            </button>
+            <button
+              onClick={() => {
+                setShowAddCategory(false)
+                setNewCategoryName('')
+              }}
+              className="w-6 h-6 bg-gray-400 text-white rounded text-xs hover:bg-gray-500"
+              title="취소"
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowAddCategory(true)}
+            className="pb-4 flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+            title="새 카테고리 추가"
+          >
+            <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-dashed border-gray-300 hover:border-gray-400">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </button>
+        )}
       </div>
 
       {/* Filters and Search */}
@@ -136,7 +254,7 @@ export default function BookmarksPage() {
             description: "A utility-first CSS framework packed with classes to build any design, directly in your markup.",
             domain: "tailwindcss.com",
             favicon: "🎨",
-            image: "https://tailwindcss.com/_next/static/media/social-card-large.a6e71726.jpg",
+            image: "https://picsum.photos/400/200?random=2",
             isFavorite: false,
             addedAt: "1 week ago"
           },
@@ -146,7 +264,7 @@ export default function BookmarksPage() {
             description: "Learn about the new App Router in Next.js 13+ with server components and improved routing.",
             domain: "nextjs.org",
             favicon: "⚡",
-            image: "https://nextjs.org/static/blog/next-13/twitter-card.png",
+            image: "https://picsum.photos/400/200?random=3",
             isFavorite: true,
             addedAt: "3 days ago"
           },
@@ -156,7 +274,7 @@ export default function BookmarksPage() {
             description: "AI pair programmer that helps you write code faster with whole-line and full function suggestions.",
             domain: "github.com",
             favicon: "🐙",
-            image: "https://github.blog/wp-content/uploads/2021/06/GitHub-Copilot_blog-header.png?resize=1600%2C850",
+            image: "https://picsum.photos/400/200?random=4",
             isFavorite: false,
             addedAt: "1 day ago"
           }
@@ -238,7 +356,76 @@ export default function BookmarksPage() {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onSuccess={handleBookmarkSuccess}
+        categories={allCategories}
+        defaultCategory={selectedCategory !== 'all' ? selectedCategory : 'tech'}
       />
+
+      {/* Delete Category Confirmation Modal */}
+      {showDeleteConfirm && categoryToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                  <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    카테고리 삭제 확인
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    이 작업은 되돌릴 수 없습니다
+                  </p>
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-gray-700">
+                  <span className="font-medium text-red-600">"{categoryToDelete.name}"</span> 카테고리를 삭제하시겠습니까?
+                </p>
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 text-red-500 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <div className="text-sm text-red-700">
+                      <p className="font-medium mb-1">⚠️ 주의사항</p>
+                      <ul className="space-y-1 text-xs">
+                        <li>• 이 카테고리의 모든 북마크가 삭제됩니다</li>
+                        <li>• 삭제 후 복구할 수 없습니다</li>
+                        <li>• 다른 카테고리로 이동되지 않습니다</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setShowDeleteConfirm(false)
+                    setCategoryToDelete(null)
+                  }}
+                  className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors font-medium"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={confirmDeleteCategory}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  삭제하기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

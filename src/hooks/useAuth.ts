@@ -38,7 +38,7 @@ export function useAuth() {
         if (event === 'INITIAL_SESSION') {
           return
         }
-        console.log('Auth state changed:', event, session)
+        // Auth state changed successfully
         setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)

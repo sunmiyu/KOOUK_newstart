@@ -5,6 +5,7 @@ import ContentInput from '@/components/ui/ContentInput'
 import ContentCard from '@/components/ui/ContentCard'
 import ShareFolderModal from '@/components/ui/ShareFolderModal'
 import DeleteFolderModal from '@/components/ui/DeleteFolderModal'
+import BigNoteModal from '@/components/ui/BigNoteModal'
 import { Folder, CreateContentData, ContentItem, UserUsage, UserPlan, PLAN_LIMITS } from '@/types/folder'
 import { FolderSharingService } from '@/services/folderSharing'
 import { StorageCalculator } from '@/utils/storageCalculation'
@@ -119,6 +120,7 @@ export default function MyFolderPage() {
   const [upgradeReason, setUpgradeReason] = useState<'storage' | 'folders' | 'marketplace' | 'paid_selling'>('folders')
   const [showNewFolderPrompt, setShowNewFolderPrompt] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
+  const [showBigNoteModal, setShowBigNoteModal] = useState(false)
   
   // 임시 사용자 사용량 데이터 (실제로는 API에서 가져와야 함)
   const [userUsage] = useState<UserUsage>({
@@ -267,6 +269,20 @@ export default function MyFolderPage() {
     console.log('새 폴더 생성됨:', newFolder.name)
   }
 
+  const handleSaveNote = (title: string, content: string, folderId: string) => {
+    // 노트를 일반 콘텐츠와 같은 방식으로 추가
+    const contentData: CreateContentData = {
+      title,
+      description: content.substring(0, 100) + '...',
+      type: 'note',
+      content,
+      folder_id: folderId
+    }
+    
+    handleAddContent(contentData)
+    console.log('노트 저장됨:', title)
+  }
+
   // 폴더 상태 아이콘 표시 함수
   const getStatusIcon = (status: Folder['shared_status']) => {
     switch (status) {
@@ -287,14 +303,9 @@ export default function MyFolderPage() {
     }
   }
   
-  // 공유 버튼 텍스트
+  // 공유 버튼 텍스트 - 항상 "Share to Market"으로 표시
   const getShareButtonText = (status: Folder['shared_status']) => {
-    switch (status) {
-      case 'private': return '📤 Share to Marketplace'
-      case 'shared-synced': return '✅ Up to date'
-      case 'shared-outdated': return '🔄 Update Shared'
-      default: return '📤 Share to Marketplace'
-    }
+    return '📤 Share to Market'
   }
   
   // 선택된 폴더의 콘텐츠만 필터링
@@ -369,10 +380,10 @@ export default function MyFolderPage() {
                     setFolderToDelete(folder)
                     setShowDeleteModal(true)
                   }}
-                  className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-600 rounded transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-600 rounded transition-all"
                   title={`"${folder.name}" 폴더 삭제`}
                 >
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
                 </button>
@@ -412,13 +423,7 @@ export default function MyFolderPage() {
             <div className="flex items-center space-x-3">
               <button 
                 onClick={() => setShowShareModal(true)}
-                className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-                  currentStatus === 'shared-synced' ? 
-                    'bg-green-600 text-white hover:bg-green-700' :
-                  currentStatus === 'shared-outdated' ?
-                    'bg-orange-600 text-white hover:bg-orange-700' :
-                    'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
+                className="px-4 py-2 rounded-lg transition-colors flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
@@ -517,6 +522,29 @@ export default function MyFolderPage() {
           </div>
         </div>
       )}
+      
+      {/* Floating Note Button - 두 번째 스크린샷의 연필 아이콘 */}
+      <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-40">
+        <button
+          onClick={() => setShowBigNoteModal(true)}
+          className="w-12 h-12 bg-gray-800 hover:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-105"
+          title="Quick Notes"
+        >
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Big Note Modal */}
+      <BigNoteModal
+        isOpen={showBigNoteModal}
+        onClose={() => setShowBigNoteModal(false)}
+        onSave={handleSaveNote}
+        allFolders={folders.map(f => ({ id: f.id, name: f.name }))}
+        selectedFolderId={selectedFolder.id}
+        variant="drawer"
+      />
       
       {/* Upgrade Modal */}
       <UpgradeModal
