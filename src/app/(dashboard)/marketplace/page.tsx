@@ -44,65 +44,76 @@ export default function MarketplacePage() {
       </div>
 
 
-      {/* Main Layout: Left Content + Right Sidebar */}
-      <div className="flex gap-8">
-        {/* Main Content */}
-        <div className="flex-1">
-          {/* Filters */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-6">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-full border transition-colors ${
-                    selectedCategory === category.id
-                      ? 'border-gray-500 bg-gray-50 text-gray-800'
-                      : 'border-gray-300 hover:border-gray-400 text-gray-700'
-                  }`}
-                >
-                  <span className="text-sm font-medium">{category.name}</span>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    selectedCategory === category.id
-                      ? 'bg-gray-100 text-gray-800'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {category.count}
-                  </span>
-                </button>
-              ))}
+      {/* Category Tabs - Bookmarks와 동일한 스타일 */}
+      <div className="flex items-center space-x-6 border-b border-gray-200 mb-6 overflow-x-auto">
+        {categories.map((category) => (
+          <button
+            key={category.id}
+            onClick={() => setSelectedCategory(category.id)}
+            className={`pb-4 border-b-2 transition-colors group flex-shrink-0 ${
+              selectedCategory === category.id
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent hover:border-gray-300'
+            }`}
+          >
+            <div className="flex items-center space-x-2">
+              <span className={`text-sm font-medium ${
+                selectedCategory === category.id
+                  ? 'text-blue-600'
+                  : 'text-gray-700 group-hover:text-gray-900'
+              }`}>
+                {category.name}
+              </span>
+              <span className={`text-xs px-2 py-1 rounded-full ${
+                selectedCategory === category.id
+                  ? 'bg-blue-100 text-blue-600'
+                  : 'bg-gray-100 text-gray-600'
+              }`}>
+                {category.count}
+              </span>
             </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search collections..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500 focus:border-gray-500"
-                />
-                <svg className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                </svg>
-              </div>
-              
-              <select 
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
-              >
-                {mainSortOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+          </button>
+        ))}
+      </div>
 
-          {/* Collections Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Search and Filters - Bookmarks와 동일한 위치 */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-4">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search collections..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-80 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <svg className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+            </svg>
+          </div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-600">Sort by:</span>
+          <select 
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-1 text-sm"
+          >
+            {mainSortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Main Layout: 3개 카드 + 오른쪽 패널 = 4개 카드 느낌 */}
+      <div className="lg:flex lg:gap-6">
+        {/* Main Content - 카드 3개, Bookmarks 4개 카드와 동일한 너비감 */}
+        <div className="lg:flex-1">
+          {/* Collections Grid - 3개 카드 (xl에서) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
         {[
           {
             name: "Essential Dev Tools 2024",
@@ -250,8 +261,8 @@ export default function MarketplacePage() {
           </div>
         </div>
 
-        {/* Right Sidebar - Popular Collections */}
-        <div className="w-80 flex-shrink-0">
+        {/* Right Sidebar - Bookmarks 4번째 카드 위치에 해당하는 패널 */}
+        <div className="hidden xl:block w-72 flex-shrink-0">
           <div className="bg-white rounded-lg border border-gray-200 p-6 sticky top-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <span className="mr-2">🔥</span>

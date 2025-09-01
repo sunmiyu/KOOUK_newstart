@@ -18,6 +18,37 @@ export default function AccountMenuModal({
   const { user, signOut } = useAuth()
   const [showComingSoon, setShowComingSoon] = useState(false)
   
+  // 드롭다운 위치 계산 (화면 경계 고려)
+  const getOptimalPosition = () => {
+    if (!userProfilePosition) {
+      return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }
+    }
+    
+    const menuHeight = 380 // 실제 메뉴 높이 (더 정확한 값)
+    const menuWidth = 288 // w-72 = 18rem = 288px
+    const padding = 10
+    
+    let top = userProfilePosition.y + padding
+    let left = userProfilePosition.x - 150
+    
+    // 화면 아래쪽 경계 체크 - 드롭다운이 잘릴 경우 위쪽으로 표시
+    if (top + menuHeight > window.innerHeight) {
+      top = userProfilePosition.y - menuHeight - padding
+    }
+    
+    // 화면 오른쪽 경계 체크
+    if (left + menuWidth > window.innerWidth) {
+      left = window.innerWidth - menuWidth - padding
+    }
+    
+    // 화면 왼쪽 경계 체크
+    if (left < padding) {
+      left = padding
+    }
+    
+    return { top: `${top}px`, left: `${left}px`, transform: 'none' }
+  }
+  
   // 임시 사용자 데이터 (실제로는 API에서 가져와야 함)
   const [userUsage] = useState<UserUsage>({
     user_id: user?.id || '',
@@ -74,12 +105,8 @@ export default function AccountMenuModal({
       
       {/* Menu Modal */}
       <div 
-        className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 py-2 min-w-48"
-        style={{
-          top: userProfilePosition ? userProfilePosition.y + 10 : '50%',
-          left: userProfilePosition ? userProfilePosition.x - 150 : '50%',
-          transform: userProfilePosition ? 'none' : 'translate(-50%, -50%)'
-        }}
+        className="fixed z-50 bg-white rounded-lg shadow-xl border border-gray-200 py-2 w-72"
+        style={getOptimalPosition()}
       >
         {/* User Info Header */}
         {user && (

@@ -179,8 +179,10 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Usage Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+      {/* Main Dashboard Layout - 4열 그리드 구조 */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+        
+        {/* 1번 영역 - 사용량 현황 */}
         <div className="lg:col-span-1">
           <UsageCard 
             onUpgradeClick={handleUpgradeClick}
@@ -188,105 +190,110 @@ export default function DashboardPage() {
           />
         </div>
         
-        {/* Recent Activity moved here */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
-            <div className="space-y-3">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full"></div>
-                <p className="ml-3 text-sm text-gray-600">
-                  Created new folder <span className="font-medium">Work Projects</span>
-                </p>
-                <span className="ml-auto text-xs text-gray-400">2m ago</span>
+        {/* 2번 영역 - Quick Actions (세로 스택) */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+              <div className="space-y-4">
+                <button 
+                  onClick={() => handleQuickAction('new-folder', 'folders')}
+                  className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex items-center gap-3"
+                >
+                  <div className="text-2xl">📁</div>
+                  <p className="text-sm font-medium text-gray-700">New Folder</p>
+                </button>
+                <button 
+                  onClick={() => handleQuickAction('add-link', 'storage')}
+                  className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex items-center gap-3"
+                >
+                  <div className="text-2xl">🔗</div>
+                  <p className="text-sm font-medium text-gray-700">Add Link</p>
+                </button>
+                <button 
+                  onClick={() => handleQuickAction('write-note', 'storage')}
+                  className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex items-center gap-3"
+                >
+                  <div className="text-2xl">📝</div>
+                  <p className="text-sm font-medium text-gray-700">Write Note</p>
+                </button>
+                <button 
+                  onClick={() => handleQuickAction('upload-file', 'storage')}
+                  className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex items-center gap-3"
+                >
+                  <div className="text-2xl">📤</div>
+                  <p className="text-sm font-medium text-gray-700">Upload File</p>
+                </button>
               </div>
-              <div className="flex items-center">
-                <div className="flex-shrink-0 w-2 h-2 bg-green-500 rounded-full"></div>
-                <p className="ml-3 text-sm text-gray-600">
-                  Added bookmark <span className="font-medium">React Documentation</span>
-                </p>
-                <span className="ml-auto text-xs text-gray-400">1h ago</span>
-              </div>
-              <div className="flex items-center">
-                <div className="flex-shrink-0 w-2 h-2 bg-purple-500 rounded-full"></div>
-                <p className="ml-3 text-sm text-gray-600">
-                  Shared folder <span className="font-medium">Design Resources</span>
-                </p>
-                <span className="ml-auto text-xs text-gray-400">3h ago</span>
-              </div>
-              <div className="flex items-center">
-                <div className="flex-shrink-0 w-2 h-2 bg-orange-500 rounded-full"></div>
-                <p className="ml-3 text-sm text-gray-600">
-                  {userUsage?.is_storage_warning && (
-                    <span className="text-orange-600 font-medium">⚠️ 저장공간 90% 사용 중</span>
-                  )}
-                  {!userUsage?.is_storage_warning && 'Storage usage within normal range'}
-                </p>
-                <span className="ml-auto text-xs text-gray-400">5h ago</span>
-              </div>
-              <div className="flex items-center">
-                <div className="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full"></div>
-                <p className="ml-3 text-sm text-gray-600">
-                  {userUsage?.folder_usage_percent && userUsage.folder_usage_percent >= 90 && (
-                    <span className="text-red-600 font-medium">⚠️ 폴더 한계 임박 ({userUsage?.current_folders}/{userUsage?.limits.max_folders})</span>
-                  )}
-                  {(!userUsage || (userUsage?.folder_usage_percent && userUsage.folder_usage_percent < 90)) && 'Folder usage within normal range'}
-                </p>
-                <span className="ml-auto text-xs text-gray-400">1d ago</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* 3~4번 영역 - Recent Activity (넓게) */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <p className="ml-3 text-sm text-gray-600">
+                    Created new folder <span className="font-medium">Work Projects</span>
+                  </p>
+                  <span className="ml-auto text-xs text-gray-400">2m ago</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 w-2 h-2 bg-green-500 rounded-full"></div>
+                  <p className="ml-3 text-sm text-gray-600">
+                    Added bookmark <span className="font-medium">React Documentation</span>
+                  </p>
+                  <span className="ml-auto text-xs text-gray-400">1h ago</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <p className="ml-3 text-sm text-gray-600">
+                    Shared folder <span className="font-medium">Design Resources</span>
+                  </p>
+                  <span className="ml-auto text-xs text-gray-400">3h ago</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 w-2 h-2 bg-orange-500 rounded-full"></div>
+                  <p className="ml-3 text-sm text-gray-600">
+                    {userUsage?.is_storage_warning && (
+                      <span className="text-orange-600 font-medium">⚠️ 저장공간 90% 사용 중</span>
+                    )}
+                    {!userUsage?.is_storage_warning && 'Storage usage within normal range'}
+                  </p>
+                  <span className="ml-auto text-xs text-gray-400">5h ago</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full"></div>
+                  <p className="ml-3 text-sm text-gray-600">
+                    {userUsage?.folder_usage_percent && userUsage.folder_usage_percent >= 90 && (
+                      <span className="text-red-600 font-medium">⚠️ 폴더 한계 임박 ({userUsage?.current_folders}/{userUsage?.limits.max_folders})</span>
+                    )}
+                    {(!userUsage || (userUsage?.folder_usage_percent && userUsage.folder_usage_percent < 90)) && 'Folder usage within normal range'}
+                  </p>
+                  <span className="ml-auto text-xs text-gray-400">1d ago</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      {/* 두 번째 행 - Free vs Pro 비교 (넓게) */}
+      {userUsage?.plan === 'free' && (
+        <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg shadow-sm border border-blue-200">
           <div className="p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <button 
-                onClick={() => handleQuickAction('new-folder', 'folders')}
-                className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
-              >
-                <div className="text-2xl mb-2">📁</div>
-                <p className="text-sm font-medium text-gray-700">New Folder</p>
-              </button>
-              <button 
-                onClick={() => handleQuickAction('add-link', 'storage')}
-                className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
-              >
-                <div className="text-2xl mb-2">🔗</div>
-                <p className="text-sm font-medium text-gray-700">Add Link</p>
-              </button>
-              <button 
-                onClick={() => handleQuickAction('write-note', 'storage')}
-                className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
-              >
-                <div className="text-2xl mb-2">📝</div>
-                <p className="text-sm font-medium text-gray-700">Write Note</p>
-              </button>
-              <button 
-                onClick={() => handleQuickAction('upload-file', 'storage')}
-                className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors"
-              >
-                <div className="text-2xl mb-2">📤</div>
-                <p className="text-sm font-medium text-gray-700">Upload File</p>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Pro vs Free Comparison - Free 사용자만 */}
-        {userUsage?.plan === 'free' && (
-          <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg shadow-sm border border-blue-200">
-            <div className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 text-center">
-                <span className="mr-2">⚡</span>Free vs Pro 비교
-              </h2>
-              
-              {/* 비교 테이블 */}
-              <div className="space-y-3 mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-6 text-center">
+              <span className="mr-2">⚡</span>Free vs Pro 비교
+            </h2>
+            
+            {/* 비교 테이블 */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* 왼쪽 - 기능 비교 */}
+              <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-4 text-sm font-medium text-gray-700 pb-2 border-b border-gray-300">
                   <div></div>
                   <div className="text-center">Free</div>
@@ -325,18 +332,28 @@ export default function DashboardPage() {
                   <div className="text-center text-blue-600 font-medium">✓</div>
                 </div>
               </div>
-
-              <div className="bg-white rounded-lg p-4 border border-blue-200">
-                <div className="text-center">
-                  <div className="text-blue-600 text-2xl mb-2">🚀</div>
-                  <p className="text-sm font-medium text-gray-800 mb-1">Pro 플랜 공개 예정!</p>
-                  <p className="text-xs text-gray-600">더 강력한 기능으로 돌아올게요</p>
+              
+              {/* 오른쪽 - Pro 플랜 안내 */}
+              <div className="flex items-center justify-center">
+                <div className="bg-white rounded-lg p-6 border border-blue-200 w-full">
+                  <div className="text-center">
+                    <div className="text-blue-600 text-4xl mb-4">🚀</div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Pro 플랜 공개 예정!</h3>
+                    <p className="text-sm text-gray-600 mb-4">더 강력한 기능으로 돌아올게요</p>
+                    
+                    <div className="text-xs text-gray-500 space-y-1">
+                      <p>• 10배 더 큰 저장공간</p>
+                      <p>• 마켓플레이스 유료 판매</p>
+                      <p>• 상세한 분석 리포트</p>
+                      <p>• 우선 지원</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
       
       {/* Upgrade Modal */}
       {userUsage && (

@@ -208,7 +208,7 @@ const initialContentItems: ContentItem[] = [
     title: '백종원 맛남의광장 - 전주편',
     description: '백종원이 직접 찾아간 전주 맛집들, 진짜 맛있는 곳만 엄선!',
     type: 'link',
-    url: 'https://www.youtube.com/watch?v=FoodTour123',
+    url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     folder_id: '2',
     user_id: 'user1',
     created_at: new Date(Date.now() - 777600000).toISOString(), // 9일 전
@@ -218,8 +218,8 @@ const initialContentItems: ContentItem[] = [
       description: '전주 한옥마을의 진짜 맛집들을 백종원과 함께 탐방해보세요!',
       domain: 'youtube.com',
       platform: 'youtube',
-      image: 'https://img.youtube.com/vi/FoodTour123/maxresdefault.jpg',
-      videoId: 'FoodTour123',
+      image: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+      videoId: 'dQw4w9WgXcQ',
       channelTitle: 'tvN',
       duration: '48:30'
     }

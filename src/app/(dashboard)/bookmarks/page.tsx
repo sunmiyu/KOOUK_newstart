@@ -1,9 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import AddBookmarkModal from '@/components/ui/AddBookmarkModal'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function BookmarksPage() {
+  const { user } = useAuth()
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -16,28 +19,114 @@ export default function BookmarksPage() {
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null)
   const [editingCategoryName, setEditingCategoryName] = useState('')
   
+  // 실제 북마크 데이터 상태
+  const [bookmarks, setBookmarks] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  
+  // 동적 카테고리 카운트 계산
+  const getCategoryCount = (categoryId: string) => {
+    if (categoryId === 'all') {
+      return bookmarks.length
+    }
+    return bookmarks.filter(bookmark => bookmark.category === categoryId).length
+  }
+
   // 기본 카테고리 (삭제 불가)
   const defaultCategories = [
-    { id: 'all', name: 'All', count: 247, isDefault: true },
-    { id: 'tech', name: 'Tech', count: 89, isDefault: true },
-    { id: 'design', name: 'Design', count: 56, isDefault: true },
-    { id: 'news', name: 'News', count: 34, isDefault: true },
-    { id: 'education', name: 'Education', count: 28, isDefault: true },
-    { id: 'entertainment', name: 'Entertainment', count: 40, isDefault: true }
+    { id: 'all', name: 'All', count: getCategoryCount('all'), isDefault: true },
+    { id: 'tech', name: 'Tech', count: getCategoryCount('tech'), isDefault: true },
+    { id: 'design', name: 'Design', count: getCategoryCount('design'), isDefault: true },
+    { id: 'news', name: 'News', count: getCategoryCount('news'), isDefault: true },
+    { id: 'education', name: 'Education', count: getCategoryCount('education'), isDefault: true },
+    { id: 'entertainment', name: 'Entertainment', count: getCategoryCount('entertainment'), isDefault: true }
   ]
   
-  // 커스텀 카테고리 (사용자가 추가한 것들)
+  // 커스텀 카테고리 (사용자가 추가한 것들) - 동적 카운트 적용
   const [customCategories, setCustomCategories] = useState([
-    { id: 'custom-1', name: '개발 도구', count: 5, isDefault: false },
-    { id: 'custom-2', name: '유튜브 채널', count: 4, isDefault: false },
+    { id: 'custom-1', name: '개발 도구', isDefault: false },
+    { id: 'custom-2', name: '유튜브 채널', isDefault: false },
   ])
   
-  // 전체 카테고리 목록
-  const allCategories = [...defaultCategories, ...customCategories]
+  // 전체 카테고리 목록 (동적 카운트 포함)
+  const allCategories = [
+    ...defaultCategories,
+    ...customCategories.map(cat => ({
+      ...cat,
+      count: getCategoryCount(cat.id)
+    }))
+  ]
 
-  const handleBookmarkSuccess = (bookmarkData: any) => {
-    console.log('새 북마크 추가됨:', bookmarkData)
-    // TODO: 실제 북마크 저장 로직 구현
+  // 북마크 로드
+  const loadBookmarks = async () => {
+    if (!user) return
+    
+    setLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('bookmarks')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        console.error('북마크 로드 실패:', error)
+        return
+      }
+      
+      setBookmarks(data || [])
+    } catch (error) {
+      console.error('북마크 로드 오류:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 컴포넌트 마운트시 북마크 로드
+  useEffect(() => {
+    if (user) {
+      loadBookmarks()
+    }
+  }, [user])
+
+  const handleBookmarkSuccess = async (bookmarkData: any) => {
+    if (!user) return
+    
+    try {
+      // Supabase에 저장
+      const { data, error } = await supabase
+        .from('bookmarks')
+        .insert([
+          {
+            title: bookmarkData.title,
+            url: bookmarkData.url,
+            description: bookmarkData.description || '',
+            category: bookmarkData.category,
+            user_id: user.id,
+            thumbnail: bookmarkData.image || '',
+            favicon: '🌐', // 기본 파비콘
+            is_favorite: false,
+            tags: [],
+            metadata: {
+              domain: bookmarkData.domain,
+              platform: bookmarkData.platform || 'web'
+            }
+          }
+        ])
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('북마크 저장 실패:', error)
+        return
+      }
+      
+      // 로컬 상태 업데이트 (맨 앞에 추가)
+      setBookmarks(prev => [data, ...prev])
+      
+      console.log('새 북마크 추가됨:', data)
+    } catch (error) {
+      console.error('북마크 저장 오류:', error)
+    }
   }
 
   const handleAddCategory = () => {
@@ -46,7 +135,6 @@ export default function BookmarksPage() {
     const newCategory = {
       id: `custom-${Date.now()}`,
       name: newCategoryName.trim(),
-      count: 0,
       isDefault: false
     }
     
@@ -295,191 +383,131 @@ export default function BookmarksPage() {
       </div>
 
       {/* Bookmarks Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {/* Real example bookmarks */}
-        {[
-          {
-            title: "React 공식 문서",
-            url: "https://react.dev",
-            description: "React의 최신 공식 문서. Hooks, Components, 성능 최적화 등 모든 내용을 다룹니다.",
-            domain: "react.dev",
-            favicon: "⚛️",
-            image: "https://react.dev/images/home/conf2021/cover.svg",
-            isFavorite: true,
-            addedAt: "2 days ago",
-            category: "tech"
-          },
-          {
-            title: "Figma - 협업 디자인 도구",
-            url: "https://figma.com",
-            description: "실시간 협업이 가능한 웹 기반 디자인 도구. UI/UX 디자인의 필수템!",
-            domain: "figma.com",
-            favicon: "🎨",
-            image: "https://picsum.photos/400/200?random=figma",
-            isFavorite: true,
-            addedAt: "1 week ago",
-            category: "custom-1" // 개발 도구
-          },
-          {
-            title: "노마드 코더 - React Native 완전정복",
-            url: "https://www.youtube.com/c/nomadcoders",
-            description: "실무에서 바로 쓸 수 있는 React Native 강의. 무료로 배우는 앱 개발!",
-            domain: "youtube.com",
-            favicon: "📺",
-            image: "https://picsum.photos/400/200?random=nomad",
-            isFavorite: true,
-            addedAt: "3 days ago",
-            category: "custom-2" // 유튜브 채널
-          },
-          {
-            title: "GitHub Copilot",
-            url: "https://github.com/features/copilot",
-            description: "AI가 코드를 작성해주는 페어 프로그래밍 도구. 개발 생산성이 확실히 올라감!",
-            domain: "github.com",
-            favicon: "🤖",
-            image: "https://picsum.photos/400/200?random=copilot",
-            isFavorite: false,
-            addedAt: "1 day ago",
-            category: "custom-1" // 개발 도구
-          },
-          {
-            title: "드림코딩 by 엘리",
-            url: "https://www.youtube.com/c/DreamCoding",
-            description: "프론트엔드 개발자가 되고 싶다면 꼭 봐야 할 채널. 실무 경험 가득한 꿀팁들!",
-            domain: "youtube.com",
-            favicon: "💻",
-            image: "https://picsum.photos/400/200?random=dreamcoding",
-            isFavorite: true,
-            addedAt: "5 days ago",
-            category: "custom-2" // 유튜브 채널
-          },
-          {
-            title: "Notion - 올인원 워크스페이스",
-            url: "https://notion.so",
-            description: "노트, 문서, 프로젝트 관리까지 한 번에! 개인부터 팀까지 모든 업무 정리",
-            domain: "notion.so",
-            favicon: "📝",
-            image: "https://picsum.photos/400/200?random=notion",
-            isFavorite: false,
-            addedAt: "1 week ago",
-            category: "custom-1" // 개발 도구
-          },
-          {
-            title: "MDN Web Docs",
-            url: "https://developer.mozilla.org",
-            description: "웹 개발자의 바이블! HTML, CSS, JavaScript 등 웹 기술의 모든 것",
-            domain: "developer.mozilla.org",
-            favicon: "📚",
-            image: "https://picsum.photos/400/200?random=mdn",
-            isFavorite: true,
-            addedAt: "2 weeks ago",
-            category: "tech"
-          },
-          {
-            title: "생활코딩",
-            url: "https://www.youtube.com/c/egoing2",
-            description: "프로그래밍 기초부터 차근차근! 이고잉님의 명강의로 기초를 탄탄히",
-            domain: "youtube.com",
-            favicon: "🎓",
-            image: "https://picsum.photos/400/200?random=opentutorials",
-            isFavorite: false,
-            addedAt: "1 week ago",
-            category: "custom-2" // 유튜브 채널
-          },
-          {
-            title: "Vercel - 배포 플랫폼",
-            url: "https://vercel.com",
-            description: "Next.js 프로젝트 배포의 최강자! 자동 배포, CDN, 도메인까지 원클릭",
-            domain: "vercel.com",
-            favicon: "▲",
-            image: "https://picsum.photos/400/200?random=vercel",
-            isFavorite: true,
-            addedAt: "4 days ago",
-            category: "custom-1" // 개발 도구
-          },
-          {
-            title: "Can I Use",
-            url: "https://caniuse.com",
-            description: "브라우저 호환성 체크의 필수 사이트! 이 기능 IE에서 될까? 궁금할 때",
-            domain: "caniuse.com",
-            favicon: "✅",
-            image: "https://picsum.photos/400/200?random=caniuse",
-            isFavorite: false,
-            addedAt: "6 days ago",
-            category: "tech"
-          }
-        ].map((bookmark, index) => (
-          <div 
-            key={index} 
-            onClick={() => window.open(bookmark.url, '_blank')}
-            className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
-          >
-            {/* 실제 썸네일 이미지 */}
-            <div className="h-32 bg-gray-100 overflow-hidden">
-              {bookmark.image ? (
-                <img
-                  src={bookmark.image}
-                  alt={bookmark.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  onError={(e) => {
-                    // 이미지 로드 실패 시 fallback
-                    e.currentTarget.style.display = 'none'
-                    const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon')
-                    if (fallback) {
-                      (fallback as HTMLElement).style.display = 'flex'
-                    }
-                  }}
-                />
-              ) : null}
-              {/* 이미지 로드 실패 시 fallback */}
-              <div className={`fallback-icon w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center ${bookmark.image ? 'hidden' : 'flex'}`}>
-                <span className="text-4xl">{bookmark.favicon}</span>
-              </div>
-            </div>
-            
-            <div className="p-4">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <span className="text-xs">{bookmark.favicon}</span>
-                  <span className="text-xs text-gray-500">{bookmark.domain}</span>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-3 text-gray-600">북마크를 불러오는 중...</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {bookmarks
+            .filter(bookmark => {
+              // 카테고리 필터링
+              if (selectedCategory !== 'all' && bookmark.category !== selectedCategory) {
+                return false
+              }
+              
+              // 즐겨찾기 필터링
+              if (showFavoritesOnly && !bookmark.is_favorite) {
+                return false
+              }
+              
+              // 검색 필터링
+              if (searchTerm) {
+                const searchLower = searchTerm.toLowerCase()
+                return (
+                  bookmark.title.toLowerCase().includes(searchLower) ||
+                  bookmark.description?.toLowerCase().includes(searchLower) ||
+                  bookmark.url.toLowerCase().includes(searchLower)
+                )
+              }
+              
+              return true
+            })
+            .map((bookmark) => (
+              <div 
+                key={bookmark.id} 
+                onClick={() => window.open(bookmark.url, '_blank')}
+                className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
+              >
+                {/* 썸네일 이미지 */}
+                <div className="h-32 bg-gray-100 overflow-hidden">
+                  {bookmark.thumbnail ? (
+                    <img
+                      src={bookmark.thumbnail}
+                      alt={bookmark.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        // 이미지 로드 실패 시 fallback
+                        e.currentTarget.style.display = 'none'
+                        const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon')
+                        if (fallback) {
+                          (fallback as HTMLElement).style.display = 'flex'
+                        }
+                      }}
+                    />
+                  ) : null}
+                  {/* 이미지 로드 실패 시 fallback */}
+                  <div className={`fallback-icon w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center ${bookmark.thumbnail ? 'hidden' : 'flex'}`}>
+                    <span className="text-4xl">{bookmark.favicon || '🌐'}</span>
+                  </div>
                 </div>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    console.log('Toggle favorite:', bookmark.title)
-                  }}
-                  className={`text-sm ${bookmark.isFavorite ? 'text-yellow-500' : 'text-gray-300'} hover:text-yellow-500`}
-                >
-                  ⭐
-                </button>
+                
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs">{bookmark.favicon || '🌐'}</span>
+                      <span className="text-xs text-gray-500">{bookmark.metadata?.domain || new URL(bookmark.url).hostname}</span>
+                    </div>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        // TODO: 즐겨찾기 토글 기능 구현
+                        console.log('Toggle favorite:', bookmark.title)
+                      }}
+                      className={`text-sm ${bookmark.is_favorite ? 'text-yellow-500' : 'text-gray-300'} hover:text-yellow-500`}
+                    >
+                      ⭐
+                    </button>
+                  </div>
+                  
+                  <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600">
+                    {bookmark.title}
+                  </h3>
+                  
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                    {bookmark.description || '설명이 없습니다'}
+                  </p>
+                  
+                  <div className="flex items-center justify-between text-xs text-gray-400">
+                    <span>{new Date(bookmark.created_at).toLocaleDateString()}</span>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        console.log('Options for:', bookmark.title)
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               </div>
-              
-              <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600">
-                {bookmark.title}
-              </h3>
-              
-              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                {bookmark.description}
+            ))}
+          
+          {/* 북마크가 없을 때 표시 */}
+          {bookmarks.length === 0 && (
+            <div className="col-span-full flex flex-col items-center justify-center py-12 text-gray-500">
+              <div className="text-6xl mb-4">🔖</div>
+              <h3 className="text-lg font-medium mb-2">아직 북마크가 없습니다</h3>
+              <p className="text-sm text-center mb-4">
+                "Add Bookmark" 버튼을 클릭하여<br />
+                첫 번째 북마크를 추가해보세요
               </p>
-              
-              <div className="flex items-center justify-between text-xs text-gray-400">
-                <span>{bookmark.addedAt}</span>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    console.log('Options for:', bookmark.title)
-                  }}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                  </svg>
-                </button>
-              </div>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <span className="mr-2">🔗</span>
+                첫 북마크 추가하기
+              </button>
             </div>
-          </div>
-        ))}
-      </div>
+          )}
+        </div>
+      )}
+
 
       {/* Add Bookmark Modal */}
       <AddBookmarkModal
