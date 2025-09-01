@@ -37,7 +37,7 @@ export interface ContentItem {
   favicon?: string
   folder_id: string
   user_id: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   created_at: string
   updated_at: string
 }
@@ -61,6 +61,14 @@ export interface CreateContentData {
   url?: string
   content?: string
   folder_id: string
+}
+
+export interface ShareOptions {
+  price: number
+  category: string
+  description?: string
+  tags: string[]
+  cover_image?: string
 }
 
 export interface UpdateContentData extends Partial<CreateContentData> {

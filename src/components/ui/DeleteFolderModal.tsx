@@ -53,7 +53,7 @@ export default function DeleteFolderModal({
               </h3>
               <div className="text-sm text-gray-600 space-y-2">
                 <p>
-                  <span className="font-medium">"{folder.name}"</span> 폴더를 삭제하면:
+                  <span className="font-medium">&quot;{folder.name}&quot;</span> 폴더를 삭제하면:
                 </p>
                 <ul className="list-disc list-inside space-y-1 ml-2">
                   <li>폴더 안의 모든 콘텐츠가 삭제됩니다</li>

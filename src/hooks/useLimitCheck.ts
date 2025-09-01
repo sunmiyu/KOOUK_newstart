@@ -1,7 +1,6 @@
 'use client'
 
 import { useUserUsage } from './useUserUsage'
-import { UserUsage } from '@/types/folder'
 
 interface LimitCheckResult {
   canProceed: boolean

@@ -105,7 +105,7 @@ export type Database = {
           favicon: string | null
           folder_id: string
           user_id: string
-          metadata: any | null
+          metadata: Record<string, unknown> | null
           created_at: string
           updated_at: string
         }
@@ -120,7 +120,7 @@ export type Database = {
           favicon?: string | null
           folder_id: string
           user_id: string
-          metadata?: any | null
+          metadata?: Record<string, unknown> | null
           created_at?: string
           updated_at?: string
         }
@@ -132,7 +132,7 @@ export type Database = {
           content?: string | null
           thumbnail?: string | null
           favicon?: string | null
-          metadata?: any | null
+          metadata?: Record<string, unknown> | null
           updated_at?: string
         }
       }
@@ -148,7 +148,7 @@ export type Database = {
           tags: string[]
           is_favorite: boolean
           user_id: string
-          metadata: any | null
+          metadata: Record<string, unknown> | null
           created_at: string
           updated_at: string
         }
@@ -163,7 +163,7 @@ export type Database = {
           tags?: string[]
           is_favorite?: boolean
           user_id: string
-          metadata?: any | null
+          metadata?: Record<string, unknown> | null
           created_at?: string
           updated_at?: string
         }
@@ -176,7 +176,7 @@ export type Database = {
           category?: string
           tags?: string[]
           is_favorite?: boolean
-          metadata?: any | null
+          metadata?: Record<string, unknown> | null
           updated_at?: string
         }
       }

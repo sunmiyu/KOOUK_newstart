@@ -2,8 +2,9 @@
 
 import { ContentItem } from '@/types/folder'
 import { isYouTubeUrl } from '@/utils/youtube'
-import { getDomainInfo, getContentTypeIcon, getPlatformColor, EnhancedMetadata } from '@/utils/enhancedMetadata'
+import { getDomainInfo, getContentTypeIcon, getPlatformColor } from '@/utils/enhancedMetadata'
 import { useState } from 'react'
+import Image from 'next/image'
 
 interface ContentCardProps {
   item: ContentItem
@@ -12,6 +13,8 @@ interface ContentCardProps {
 }
 
 export default function ContentCard({ item, onEdit, onDelete }: ContentCardProps) {
+  const [imageError, setImageError] = useState(false)
+  
   const getIcon = () => {
     switch (item.type) {
       case 'link':
@@ -73,19 +76,23 @@ export default function ContentCard({ item, onEdit, onDelete }: ContentCardProps
 
   const getThumbnail = () => {
     // 향상된 썸네일 로직
-    const [imageError, setImageError] = useState(false)
-    const thumbnail = item.metadata?.thumbnail || item.thumbnail || item.metadata?.image
-    const domainInfo = getDomainInfo(item.url || item.metadata?.domain || '')
+    const thumbnail = (typeof item.metadata?.thumbnail === 'string' ? item.metadata.thumbnail : '') || 
+                     item.thumbnail || 
+                     (typeof item.metadata?.image === 'string' ? item.metadata.image : '')
+    const domainInfo = getDomainInfo(item.url || (typeof item.metadata?.domain === 'string' ? item.metadata.domain : '') || '')
     
     // 1순위: 실제 썸네일이 있고 로드 에러가 없는 경우
     if (thumbnail && !imageError) {
       return (
         <div className="w-full h-32 mb-3 rounded-lg overflow-hidden bg-gray-100 relative">
-          <img
+          <Image
             src={thumbnail}
             alt={item.title}
-            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover hover:scale-105 transition-transform duration-300"
             onError={() => setImageError(true)}
+            unoptimized
           />
           {/* YouTube 영상 재생 아이콘 */}
           {isYouTubeUrl(item.url || '') && (
@@ -188,14 +195,14 @@ export default function ContentCard({ item, onEdit, onDelete }: ContentCardProps
               {/* 도메인 + 추가 메타정보 */}
               <div className="flex items-center gap-2 text-xs text-gray-500">
                 {item.metadata?.domain && (
-                  <span className="truncate">{item.metadata.domain}</span>
+                  <span className="truncate">{typeof item.metadata?.domain === 'string' ? item.metadata.domain : ''}</span>
                 )}
                 
                 {/* YouTube 특화 정보 */}
                 {isYouTubeUrl(item.url || '') && item.metadata?.channelTitle && (
                   <>
                     <span>•</span>
-                    <span className="truncate">{item.metadata.channelTitle}</span>
+                    <span className="truncate">{typeof item.metadata?.channelTitle === 'string' ? item.metadata.channelTitle : ''}</span>
                   </>
                 )}
                 
@@ -203,7 +210,7 @@ export default function ContentCard({ item, onEdit, onDelete }: ContentCardProps
                 {item.metadata?.duration && (
                   <>
                     <span>•</span>
-                    <span className="text-red-600 font-medium">{item.metadata.duration}</span>
+                    <span className="text-red-600 font-medium">{typeof item.metadata?.duration === 'string' ? item.metadata.duration : ''}</span>
                   </>
                 )}
               </div>

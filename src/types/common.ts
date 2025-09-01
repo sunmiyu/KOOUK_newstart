@@ -27,7 +27,51 @@ export interface LoadingState {
 
 export interface ModalState {
   isOpen: boolean
-  data?: any
+  data?: Record<string, unknown>
+}
+
+export interface Bookmark {
+  id: string
+  title: string
+  url: string
+  description?: string
+  category: string
+  user_id: string
+  thumbnail?: string
+  favicon?: string
+  is_favorite: boolean
+  tags: string[]
+  metadata?: {
+    domain?: string
+    platform?: string
+    [key: string]: unknown
+  }
+  created_at: string
+  updated_at?: string
+}
+
+export interface BookmarkFormData {
+  title: string
+  url: string
+  description?: string
+  category: string
+  image?: string
+  domain?: string
+  platform?: string
+}
+
+export interface MarketplaceCollection {
+  id: string
+  name: string
+  description: string
+  category: string
+  downloads: number
+  likes: number
+  views: number
+  author: string
+  cover_image?: string
+  created_at: string
+  items_count: number
 }
 
 export interface ToastMessage {
@@ -44,7 +88,7 @@ export interface ToastMessage {
 
 export interface SearchParams {
   query: string
-  filters?: Record<string, any>
+  filters?: Record<string, unknown>
   sort?: string
   order?: 'asc' | 'desc'
   page?: number

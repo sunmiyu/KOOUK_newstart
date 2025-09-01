@@ -1,4 +1,4 @@
-import { Folder, MarketplaceFolder, ShareOptions, ContentItem, FolderVersionHistory } from '@/types/folder'
+import { Folder, MarketplaceFolder, ShareOptions, ContentItem } from '@/types/folder'
 import { generateContentHash, detectChanges, generateChangesSummary } from '@/utils/contentHash'
 
 export class FolderSharingService {
@@ -168,7 +168,7 @@ export class FolderSharingService {
     return null
   }
   
-  private static async createFolder(data: any): Promise<Folder> {
+  private static async createFolder(data: Record<string, unknown>): Promise<Folder> {
     // TODO: 실제 데이터베이스 구현
     return { ...data, id: Math.random().toString(36) } as Folder
   }

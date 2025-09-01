@@ -1,108 +1,37 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useIsMobile } from '@/hooks/useMediaQuery'
+import DashboardMobile from '@/components/pages/Dashboard_m'
 import UsageCard from '@/components/ui/UsageCard'
 import UpgradeModal from '@/components/ui/UpgradeModal'
 import LimitWarning from '@/components/ui/LimitWarning'
 import { ToastContainer } from '@/components/ui/Toast'
 import { useUserUsage } from '@/hooks/useUserUsage'
-import { useLimitCheck } from '@/hooks/useLimitCheck'
 import { useToast } from '@/hooks/useToast'
 
 export default function DashboardPage() {
-  const router = useRouter()
+  const isMobile = useIsMobile()
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
-  const [upgradeReason, setUpgradeReason] = useState<'storage' | 'folders' | 'marketplace' | 'paid_selling'>('folders')
+  const [upgradeReason] = useState<'storage' | 'folders' | 'marketplace' | 'paid_selling'>('folders')
   const [dismissedWarnings, setDismissedWarnings] = useState<string[]>([])
   
   // 실제 사용량 데이터 가져오기
-  const { usage: userUsage, loading: usageLoading } = useUserUsage()
-  const { checkFoldersLimit, checkStorageLimit, checkMarketplaceLimit } = useLimitCheck()
+  const { usage: userUsage } = useUserUsage()
   const { 
     toasts, 
-    removeToast, 
-    showFolderLimitError, 
-    showStorageError, 
-    showMarketplaceLimitError,
-    showSuccess 
+    removeToast 
   } = useToast()
   
   const handleUpgradeClick = () => {
     setShowUpgradeModal(true)
   }
 
-  const handleQuickAction = (action: string, limitType?: 'folders' | 'storage' | 'marketplace') => {
-    if (limitType) {
-      let limitCheck
-      switch (limitType) {
-        case 'folders':
-          limitCheck = checkFoldersLimit()
-          break
-        case 'storage':
-          limitCheck = checkStorageLimit()
-          break
-        case 'marketplace':
-          limitCheck = checkMarketplaceLimit()
-          break
-      }
-
-      if (!limitCheck.canProceed && userUsage) {
-        // 제한에 걸렸을 때 토스트 표시
-        switch (limitCheck.reason) {
-          case 'folders_full':
-            showFolderLimitError(
-              userUsage.current_folders, 
-              userUsage.limits.max_folders, 
-              () => {
-                setUpgradeReason('folders')
-                setShowUpgradeModal(true)
-              }
-            )
-            return
-          case 'storage_full':
-            showStorageError(
-              userUsage.storage_usage_percent,
-              () => {
-                setUpgradeReason('storage')
-                setShowUpgradeModal(true)
-              }
-            )
-            return
-          case 'marketplace_full':
-            showMarketplaceLimitError(
-              userUsage.current_marketplace_folders,
-              userUsage.limits.max_marketplace_folders,
-              () => {
-                setUpgradeReason('marketplace')
-                setShowUpgradeModal(true)
-              }
-            )
-            return
-        }
-      }
-    }
-
-    // 제한이 없으면 정상 진행
-    switch (action) {
-      case 'new-folder':
-        router.push('/my-folder')
-        showSuccess('새 폴더 생성 페이지로 이동합니다')
-        break
-      case 'add-link':
-        router.push('/bookmarks')
-        showSuccess('북마크 추가 페이지로 이동합니다')
-        break
-      case 'write-note':
-        router.push('/my-folder')
-        showSuccess('노트 작성 페이지로 이동합니다')
-        break
-      case 'upload-file':
-        setUpgradeReason('storage')
-        setShowUpgradeModal(true)
-        break
-    }
+  // 모바일에서는 전용 컴포넌트 사용
+  if (isMobile) {
+    return <DashboardMobile />
   }
+
   return (
     <div className="p-6">
       <div className="mb-6">
@@ -190,44 +119,65 @@ export default function DashboardPage() {
           />
         </div>
         
-        {/* 2번 영역 - Quick Actions (세로 스택) */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-              <div className="space-y-4">
-                <button 
-                  onClick={() => handleQuickAction('new-folder', 'folders')}
-                  className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex items-center gap-3"
-                >
-                  <div className="text-2xl">📁</div>
-                  <p className="text-sm font-medium text-gray-700">New Folder</p>
-                </button>
-                <button 
-                  onClick={() => handleQuickAction('add-link', 'storage')}
-                  className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex items-center gap-3"
-                >
-                  <div className="text-2xl">🔗</div>
-                  <p className="text-sm font-medium text-gray-700">Add Link</p>
-                </button>
-                <button 
-                  onClick={() => handleQuickAction('write-note', 'storage')}
-                  className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex items-center gap-3"
-                >
-                  <div className="text-2xl">📝</div>
-                  <p className="text-sm font-medium text-gray-700">Write Note</p>
-                </button>
-                <button 
-                  onClick={() => handleQuickAction('upload-file', 'storage')}
-                  className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 transition-colors flex items-center gap-3"
-                >
-                  <div className="text-2xl">📤</div>
-                  <p className="text-sm font-medium text-gray-700">Upload File</p>
-                </button>
+        {/* 2번 영역 - Free vs Pro 비교 (Quick Actions 대체) */}
+        {userUsage?.plan === 'free' && (
+          <div className="lg:col-span-1">
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg shadow-sm border border-blue-200">
+              <div className="p-4">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+                  <span className="mr-2">⚡</span>Free vs Pro 비교
+                </h2>
+                
+                {/* 컴팩트 비교 테이블 */}
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-2 text-sm font-medium text-gray-700 pb-2 border-b border-gray-300">
+                    <div></div>
+                    <div className="text-center">Free</div>
+                    <div className="text-center text-blue-600">Pro</div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="flex items-center text-xs">
+                      <span className="mr-1">💾</span>저장공간
+                    </div>
+                    <div className="text-center text-gray-600">1GB</div>
+                    <div className="text-center text-blue-600 font-medium">10GB</div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="flex items-center text-xs">
+                      <span className="mr-1">📁</span>폴더 개수
+                    </div>
+                    <div className="text-center text-gray-600">20개</div>
+                    <div className="text-center text-blue-600 font-medium">50개</div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="flex items-center text-xs">
+                      <span className="mr-1">💰</span>유료 판매
+                    </div>
+                    <div className="text-center text-gray-400">✕</div>
+                    <div className="text-center text-blue-600 font-medium">✓</div>
+                  </div>
+                  
+                  {/* Pro 플랜 안내 (축소) */}
+                  <div className="bg-white rounded-lg p-3 border border-blue-200 mt-4">
+                    <div className="text-center">
+                      <div className="text-blue-600 text-xl mb-2">🚀</div>
+                      <h3 className="text-sm font-semibold text-gray-800 mb-1">Pro 플랜 공개 예정!</h3>
+                      <p className="text-xs text-gray-600 mb-2">더 강력한 기능으로 돌아올게요</p>
+                      
+                      <div className="text-xs text-gray-500 space-y-1">
+                        <p>• 10배 더 큰 저장공간</p>
+                        <p>• 마켓플레이스 유료 판매</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
         
         {/* 3~4번 영역 - Recent Activity (넓게) */}
         <div className="lg:col-span-2">
@@ -282,78 +232,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 두 번째 행 - Free vs Pro 비교 (넓게) */}
-      {userUsage?.plan === 'free' && (
-        <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg shadow-sm border border-blue-200">
-          <div className="p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6 text-center">
-              <span className="mr-2">⚡</span>Free vs Pro 비교
-            </h2>
-            
-            {/* 비교 테이블 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* 왼쪽 - 기능 비교 */}
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-4 text-sm font-medium text-gray-700 pb-2 border-b border-gray-300">
-                  <div></div>
-                  <div className="text-center">Free</div>
-                  <div className="text-center text-blue-600">Pro</div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div className="flex items-center">
-                    <span className="mr-2">💾</span>저장공간
-                  </div>
-                  <div className="text-center text-gray-600">1GB</div>
-                  <div className="text-center text-blue-600 font-medium">10GB</div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div className="flex items-center">
-                    <span className="mr-2">📁</span>폴더 개수
-                  </div>
-                  <div className="text-center text-gray-600">20개</div>
-                  <div className="text-center text-blue-600 font-medium">50개</div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div className="flex items-center">
-                    <span className="mr-2">💰</span>유료 판매
-                  </div>
-                  <div className="text-center text-gray-400">✕</div>
-                  <div className="text-center text-blue-600 font-medium">✓</div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div className="flex items-center">
-                    <span className="mr-2">📊</span>고급 분석
-                  </div>
-                  <div className="text-center text-gray-400">✕</div>
-                  <div className="text-center text-blue-600 font-medium">✓</div>
-                </div>
-              </div>
-              
-              {/* 오른쪽 - Pro 플랜 안내 */}
-              <div className="flex items-center justify-center">
-                <div className="bg-white rounded-lg p-6 border border-blue-200 w-full">
-                  <div className="text-center">
-                    <div className="text-blue-600 text-4xl mb-4">🚀</div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Pro 플랜 공개 예정!</h3>
-                    <p className="text-sm text-gray-600 mb-4">더 강력한 기능으로 돌아올게요</p>
-                    
-                    <div className="text-xs text-gray-500 space-y-1">
-                      <p>• 10배 더 큰 저장공간</p>
-                      <p>• 마켓플레이스 유료 판매</p>
-                      <p>• 상세한 분석 리포트</p>
-                      <p>• 우선 지원</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
       
       {/* Upgrade Modal */}
       {userUsage && (

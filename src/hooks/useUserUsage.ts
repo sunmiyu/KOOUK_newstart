@@ -5,6 +5,21 @@ import { createSupabaseClient } from '@/lib/supabase'
 import { UserUsage, PLAN_LIMITS } from '@/types/folder'
 import { useAuth } from './useAuth'
 
+interface DatabaseUsage {
+  user_id: string
+  plan: 'free' | 'pro'
+  current_storage_mb: number
+  current_folders: number
+  current_marketplace_folders: number
+  storage_usage_percent: number
+  folder_usage_percent: number
+  marketplace_usage_percent: number
+  is_storage_warning: boolean
+  is_storage_full: boolean
+  is_folders_full: boolean
+  last_calculated_at: string
+}
+
 export function useUserUsage() {
   const { user } = useAuth()
   const [usage, setUsage] = useState<UserUsage | null>(null)
@@ -24,7 +39,7 @@ export function useUserUsage() {
       setError(null)
 
       // Supabase 함수 호출하여 최신 사용량 계산
-      const { data: calculatedUsage, error: rpcError } = await (supabase as any).rpc('calculate_user_usage', {
+      const { data: calculatedUsage, error: rpcError } = await supabase.rpc('calculate_user_usage', {
         target_user_id: user.id
       })
 
@@ -42,39 +57,43 @@ export function useUserUsage() {
         }
 
         // 기본값으로 사용량 구성
-        const plan = ((basicUsage as any)?.plan || 'free') as 'free' | 'pro'
+        const usageData = basicUsage as DatabaseUsage | null
+        const plan = (usageData?.plan || 'free') as 'free' | 'pro'
         setUsage({
           user_id: user.id,
           plan: plan,
-          current_storage_mb: (basicUsage as any)?.current_storage_mb || 0,
-          current_folders: (basicUsage as any)?.current_folders || 0,
-          current_marketplace_folders: (basicUsage as any)?.current_marketplace_folders || 0,
+          current_storage_mb: usageData?.current_storage_mb || 0,
+          current_folders: usageData?.current_folders || 0,
+          current_marketplace_folders: usageData?.current_marketplace_folders || 0,
           limits: PLAN_LIMITS[plan],
-          storage_usage_percent: (basicUsage as any)?.storage_usage_percent || 0,
-          folder_usage_percent: (basicUsage as any)?.folder_usage_percent || 0,
-          marketplace_usage_percent: (basicUsage as any)?.marketplace_usage_percent || 0,
-          is_storage_warning: (basicUsage as any)?.is_storage_warning || false,
-          is_storage_full: (basicUsage as any)?.is_storage_full || false,
-          is_folders_full: (basicUsage as any)?.is_folders_full || false,
-          last_calculated_at: (basicUsage as any)?.last_calculated_at || new Date().toISOString()
+          storage_usage_percent: usageData?.storage_usage_percent || 0,
+          folder_usage_percent: usageData?.folder_usage_percent || 0,
+          marketplace_usage_percent: usageData?.marketplace_usage_percent || 0,
+          is_storage_warning: usageData?.is_storage_warning || false,
+          is_storage_full: usageData?.is_storage_full || false,
+          is_folders_full: usageData?.is_folders_full || false,
+          last_calculated_at: usageData?.last_calculated_at || new Date().toISOString()
         })
       } else {
         // RPC 호출 성공 - 결과를 사용량 인터페이스에 맞게 변환
-        setUsage({
-          user_id: user.id,
-          plan: calculatedUsage.plan,
-          current_storage_mb: calculatedUsage.current_storage_mb,
-          current_folders: calculatedUsage.current_folders,
-          current_marketplace_folders: calculatedUsage.current_marketplace_folders,
-          limits: calculatedUsage.limits,
-          storage_usage_percent: calculatedUsage.storage_usage_percent,
-          folder_usage_percent: calculatedUsage.folder_usage_percent,
-          marketplace_usage_percent: calculatedUsage.marketplace_usage_percent,
-          is_storage_warning: calculatedUsage.is_storage_warning,
-          is_storage_full: calculatedUsage.is_storage_full,
-          is_folders_full: calculatedUsage.is_folders_full,
-          last_calculated_at: calculatedUsage.last_calculated_at
-        })
+        const rpcData = calculatedUsage as UserUsage | null
+        if (rpcData) {
+          setUsage({
+            user_id: user.id,
+            plan: rpcData.plan,
+            current_storage_mb: rpcData.current_storage_mb,
+            current_folders: rpcData.current_folders,
+            current_marketplace_folders: rpcData.current_marketplace_folders,
+            limits: rpcData.limits,
+            storage_usage_percent: rpcData.storage_usage_percent,
+            folder_usage_percent: rpcData.folder_usage_percent,
+            marketplace_usage_percent: rpcData.marketplace_usage_percent,
+            is_storage_warning: rpcData.is_storage_warning,
+            is_storage_full: rpcData.is_storage_full,
+            is_folders_full: rpcData.is_folders_full,
+            last_calculated_at: rpcData.last_calculated_at
+          })
+        }
       }
     } catch (err) {
       console.error('Usage fetch error:', err)

@@ -1,11 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
+import { useIsMobile } from '@/hooks/useMediaQuery'
+import BookmarksMobile from '@/components/pages/Bookmarks_m'
 import AddBookmarkModal from '@/components/ui/AddBookmarkModal'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { Bookmark, BookmarkFormData } from '@/types/common'
 
 export default function BookmarksPage() {
+  const isMobile = useIsMobile()
   const { user } = useAuth()
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -20,7 +25,7 @@ export default function BookmarksPage() {
   const [editingCategoryName, setEditingCategoryName] = useState('')
   
   // 실제 북마크 데이터 상태
-  const [bookmarks, setBookmarks] = useState<any[]>([])
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([])
   const [loading, setLoading] = useState(true)
   
   // 동적 카테고리 카운트 계산
@@ -88,30 +93,29 @@ export default function BookmarksPage() {
     }
   }, [user])
 
-  const handleBookmarkSuccess = async (bookmarkData: any) => {
+  const handleBookmarkSuccess = async (bookmarkData: BookmarkFormData) => {
     if (!user) return
     
     try {
       // Supabase에 저장
+      // @ts-expect-error: Supabase 타입 불일치 임시 처리
       const { data, error } = await supabase
         .from('bookmarks')
-        .insert([
-          {
-            title: bookmarkData.title,
-            url: bookmarkData.url,
-            description: bookmarkData.description || '',
-            category: bookmarkData.category,
-            user_id: user.id,
-            thumbnail: bookmarkData.image || '',
-            favicon: '🌐', // 기본 파비콘
-            is_favorite: false,
-            tags: [],
-            metadata: {
-              domain: bookmarkData.domain,
-              platform: bookmarkData.platform || 'web'
-            }
+        .insert({
+          title: bookmarkData.title,
+          url: bookmarkData.url,
+          description: bookmarkData.description || null,
+          category: bookmarkData.category,
+          user_id: user.id,
+          thumbnail: bookmarkData.image || null,
+          favicon: '🌐', // 기본 파비콘
+          is_favorite: false,
+          tags: [],
+          metadata: {
+            domain: bookmarkData.domain,
+            platform: bookmarkData.platform || 'web'
           }
-        ])
+        })
         .select()
         .single()
       
@@ -190,6 +194,11 @@ export default function BookmarksPage() {
   const handleCancelEditingCategory = () => {
     setEditingCategoryId(null)
     setEditingCategoryName('')
+  }
+
+  // 모바일에서는 전용 컴포넌트 사용
+  if (isMobile) {
+    return <BookmarksMobile />
   }
 
   return (
@@ -423,14 +432,16 @@ export default function BookmarksPage() {
                 {/* 썸네일 이미지 */}
                 <div className="h-32 bg-gray-100 overflow-hidden">
                   {bookmark.thumbnail ? (
-                    <img
+                    <Image
                       src={bookmark.thumbnail}
                       alt={bookmark.title}
+                      width={400}
+                      height={200}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
                         // 이미지 로드 실패 시 fallback
                         e.currentTarget.style.display = 'none'
-                        const fallback = e.currentTarget.parentElement?.querySelector('.fallback-icon')
+                        const fallback = e.currentTarget.parentElement?.parentElement?.querySelector('.fallback-icon')
                         if (fallback) {
                           (fallback as HTMLElement).style.display = 'flex'
                         }
@@ -493,7 +504,7 @@ export default function BookmarksPage() {
               <div className="text-6xl mb-4">🔖</div>
               <h3 className="text-lg font-medium mb-2">아직 북마크가 없습니다</h3>
               <p className="text-sm text-center mb-4">
-                "Add Bookmark" 버튼을 클릭하여<br />
+                &quot;Add Bookmark&quot; 버튼을 클릭하여<br />
                 첫 번째 북마크를 추가해보세요
               </p>
               <button
@@ -541,7 +552,7 @@ export default function BookmarksPage() {
               
               <div className="mb-6">
                 <p className="text-gray-700">
-                  <span className="font-medium text-red-600">"{categoryToDelete.name}"</span> 카테고리를 삭제하시겠습니까?
+                  <span className="font-medium text-red-600">&quot;{categoryToDelete.name}&quot;</span> 카테고리를 삭제하시겠습니까?
                 </p>
                 <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
                   <div className="flex items-start">

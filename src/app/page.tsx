@@ -2,10 +2,13 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useIsMobile } from '@/hooks/useMediaQuery'
+import WelcomeMobile from '@/components/pages/Welcome_m'
 import LoginButton from '@/components/ui/LoginButton'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function HomePage() {
+  const isMobile = useIsMobile()
   const { user, loading } = useAuth()
   const router = useRouter()
 
@@ -32,6 +35,12 @@ export default function HomePage() {
   if (user) {
     return null
   }
+
+  // 모바일에서는 전용 Welcome 페이지 사용
+  if (isMobile) {
+    return <WelcomeMobile />
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -56,44 +65,141 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white">
+      {/* Hero Section - Notion 스타일 좌우 레이아웃 */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-blue-50">
         <div className="max-w-7xl mx-auto px-6 py-20 lg:py-32">
-          <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-8">
-              <span>🚀</span>
-              <span>Easy Easy Super Easy</span>
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             
-            <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              나만을 위한<br />
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                디지털 라이프
-              </span><br />
-              매니저
-            </h1>
-            
-            <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-              폴더 정리부터 북마크 저장까지. 흩어진 디지털 콘텐츠를 
-              하나의 공간에서 스마트하게 관리하세요.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-              <LoginButton size="lg" />
-              <button className="text-gray-600 hover:text-gray-900 font-medium transition-colors flex items-center gap-2">
-                <span>데모 보기</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M19 10a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
+            {/* 왼쪽: 텍스트 콘텐츠 */}
+            <div className="space-y-8">
+              <div className="inline-flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
+                <span>🚀</span>
+                <span>Easy Easy Super Easy</span>
+              </div>
+              
+              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight">
+                나만을 위한<br />
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  AI 워크스페이스
+                </span>
+              </h1>
+              
+              <p className="text-xl text-gray-600 leading-relaxed max-w-lg">
+                팀이 모든 답을 찾고, 반복 업무를 자동화하며, 
+                프로젝트를 완료할 수 있는 하나의 공간.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row items-start gap-4">
+                <LoginButton size="lg" />
+                <button className="text-gray-600 hover:text-gray-900 font-medium transition-colors flex items-center gap-2 px-4 py-2">
+                  <span>데모 요청하기</span>
+                </button>
+              </div>
+
+              {/* Trust Indicators */}
+              <div className="flex items-center space-x-8 text-sm text-gray-500 pt-4">
+                <span className="flex items-center gap-1">
+                  <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  무료로 시작
+                </span>
+                <span className="flex items-center gap-1">
+                  <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  설치 불필요
+                </span>
+                <span className="flex items-center gap-1">
+                  <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  어디서나 접근
+                </span>
+              </div>
             </div>
 
-            {/* Trust Indicators */}
-            <div className="flex justify-center items-center space-x-8 text-sm text-gray-500 mb-20">
-              <span>✓ 무료로 시작</span>
-              <span>✓ 설치 불필요</span>
-              <span>✓ 어디서나 접근</span>
+            {/* 오른쪽: 시각적 요소 */}
+            <div className="relative">
+              <div className="relative">
+                {/* 메인 일러스트 영역 */}
+                <div className="relative bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl p-8 shadow-xl">
+                  <div className="space-y-6">
+                    {/* 상단: 대시보드 미니 프리뷰 */}
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">📊</span>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-700">Dashboard</span>
+                        </div>
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+                          <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="bg-blue-50 h-8 rounded flex items-center justify-center">
+                          <span className="text-xs">📁 12</span>
+                        </div>
+                        <div className="bg-green-50 h-8 rounded flex items-center justify-center">
+                          <span className="text-xs">🔖 89</span>
+                        </div>
+                        <div className="bg-purple-50 h-8 rounded flex items-center justify-center">
+                          <span className="text-xs">🔗 3</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 중간: 폴더 구조 미니 프리뷰 */}
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-yellow-500">📁</span>
+                          <span className="text-xs text-gray-600">Work Projects</span>
+                        </div>
+                        <div className="flex items-center space-x-2 pl-4">
+                          <span className="text-blue-500">🔗</span>
+                          <span className="text-xs text-gray-500">React Documentation</span>
+                        </div>
+                        <div className="flex items-center space-x-2 pl-4">
+                          <span className="text-green-500">📝</span>
+                          <span className="text-xs text-gray-500">Meeting Notes</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 하단: 마켓플레이스 카드 */}
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-lg">🛍️</span>
+                          <div>
+                            <div className="text-xs font-medium text-gray-700">Marketplace</div>
+                            <div className="text-xs text-gray-500">새로운 발견</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-blue-600">→</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 떠있는 요소들 */}
+                <div className="absolute -top-4 -right-4 w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center shadow-lg animate-bounce">
+                  <span className="text-lg">✨</span>
+                </div>
+                <div className="absolute -bottom-2 -left-4 w-10 h-10 bg-pink-200 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-sm">🚀</span>
+                </div>
+                <div className="absolute top-1/2 -right-8 w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-xs">💡</span>
+                </div>
+              </div>
             </div>
+            
           </div>
         </div>
       </section>

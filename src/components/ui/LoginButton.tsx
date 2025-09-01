@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/hooks/useAuth'
 import Button from './Button'
+import Image from 'next/image'
 
 interface LoginButtonProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
@@ -23,9 +24,11 @@ export default function LoginButton({
       <div className="flex items-center space-x-3">
         <div className="flex items-center">
           {user.user_metadata?.avatar_url ? (
-            <img
+            <Image
               src={user.user_metadata.avatar_url}
               alt="Profile"
+              width={32}
+              height={32}
               className="w-8 h-8 rounded-full mr-2"
               onError={(e) => {
                 e.currentTarget.style.display = 'none'
@@ -37,6 +40,7 @@ export default function LoginButton({
                   parent.insertBefore(div, e.currentTarget.nextSibling)
                 }
               }}
+              unoptimized
             />
           ) : (
             <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs mr-2">

@@ -1,9 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { useIsMobile } from '@/hooks/useMediaQuery'
+import MarketplaceMobile from '@/components/pages/Marketplace_m'
+import { MarketplaceCollection } from '@/types/common'
 
 export default function MarketplacePage() {
-  const [selectedCollection, setSelectedCollection] = useState<any>(null)
+  const isMobile = useIsMobile()
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState('recent')
@@ -28,9 +31,13 @@ export default function MarketplacePage() {
     { value: 'likes', label: 'Most Liked' }
   ]
 
-  const handleAddToMyFolder = (collection: any) => {
+  const handleAddToMyFolder = (collection: MarketplaceCollection) => {
     console.log('컬렉션을 My Folder에 추가:', collection)
-    // TODO: My Folder에 추가하는 로직 구현
+  }
+
+  // 모바일에서는 전용 컴포넌트 사용
+  if (isMobile) {
+    return <MarketplaceMobile />
   }
 
   return (
@@ -116,61 +123,91 @@ export default function MarketplacePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
         {[
           {
+            id: "1",
             name: "Essential Dev Tools 2024",
             description: "A comprehensive collection of development tools, VS Code extensions, and productivity apps every developer should know.",
-            author: { name: "Alex Chen", avatar: "👨‍💻" },
-            stats: { likes: 234, downloads: 1200, views: 5600 },
+            author: "Alex Chen",
+            downloads: 1200,
+            likes: 234,
+            views: 5600,
             category: "Development",
+            created_at: "2024-01-15",
+            items_count: 25,
             thumbnail: "💻",
             tags: ["VSCode", "Tools", "Productivity"],
             featured: false
           },
           {
+            id: "2",
             name: "UI Design Inspiration Hub",
             description: "Beautiful UI designs, color palettes, typography resources, and design system examples from top companies.",
-            author: { name: "Sarah Kim", avatar: "👩‍🎨" },
-            stats: { likes: 456, downloads: 2100, views: 8900 },
+            author: "Sarah Kim",
+            downloads: 2100,
+            likes: 456,
+            views: 8900,
             category: "Design",
+            created_at: "2024-01-12",
+            items_count: 42,
             thumbnail: "🎨",
             tags: ["UI", "Design", "Inspiration"],
             featured: true
           },
           {
+            id: "3",
             name: "Learning React Masterclass",
             description: "From basics to advanced concepts: hooks, context, performance optimization, and real-world project examples.",
-            author: { name: "Mike Johnson", avatar: "👨‍🏫" },
-            stats: { likes: 189, downloads: 856, views: 3200 },
+            author: "Mike Johnson",
+            downloads: 856,
+            likes: 189,
+            views: 3200,
             category: "Education",
+            created_at: "2024-01-10",
+            items_count: 18,
             thumbnail: "📚",
             tags: ["React", "JavaScript", "Tutorial"],
             featured: false
           },
           {
+            id: "4",
             name: "Startup Growth Hacks",
             description: "Proven strategies, tools, and resources used by successful startups to achieve rapid growth and market penetration.",
-            author: { name: "Emma Davis", avatar: "👩‍💼" },
-            stats: { likes: 312, downloads: 1800, views: 6700 },
+            author: "Emma Davis",
+            downloads: 1800,
+            likes: 312,
+            views: 6700,
             category: "Business",
+            created_at: "2024-01-08",
+            items_count: 35,
             thumbnail: "🚀",
             tags: ["Startup", "Growth", "Marketing"],
             featured: false
           },
           {
+            id: "5",
             name: "Photography Essentials",
             description: "Camera settings, composition techniques, post-processing tutorials, and gear recommendations for photographers.",
-            author: { name: "David Park", avatar: "📸" },
-            stats: { likes: 267, downloads: 934, views: 4100 },
+            author: "David Park",
+            downloads: 934,
+            likes: 267,
+            views: 4100,
             category: "Creative",
+            created_at: "2024-01-05",
+            items_count: 28,
             thumbnail: "📷",
             tags: ["Photography", "Tutorial", "Creative"],
             featured: false
           },
           {
+            id: "6",
             name: "Remote Work Toolkit",
             description: "Apps, systems, and strategies for productive remote work. Communication tools, time management, and team collaboration.",
-            author: { name: "Lisa Wang", avatar: "👩‍💻" },
-            stats: { likes: 423, downloads: 2700, views: 9100 },
+            author: "Lisa Wang",
+            downloads: 2700,
+            likes: 423,
+            views: 9100,
             category: "Productivity",
+            created_at: "2024-01-03",
+            items_count: 31,
             thumbnail: "🏠",
             tags: ["Remote", "Productivity", "Tools"],
             featured: true
@@ -178,7 +215,7 @@ export default function MarketplacePage() {
         ].map((collection, index) => (
           <div 
             key={index} 
-            onClick={() => setSelectedCollection(collection)}
+            onClick={() => console.log('Selected collection:', collection)}
             className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
           >
             {collection.featured && (
@@ -228,13 +265,13 @@ export default function MarketplacePage() {
               
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
-                  <span className="text-lg">{collection.author.avatar}</span>
-                  <span className="text-sm text-gray-600">{collection.author.name}</span>
+                  <span className="text-lg">👤</span>
+                  <span className="text-sm text-gray-600">{collection.author}</span>
                 </div>
                 
                 <div className="flex items-center space-x-4 text-xs text-gray-500">
-                  <span>❤️ {collection.stats.likes}</span>
-                  <span>⬇️ {collection.stats.downloads}</span>
+                  <span>❤️ {collection.likes}</span>
+                  <span>⬇️ {collection.downloads}</span>
                 </div>
               </div>
 

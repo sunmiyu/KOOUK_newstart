@@ -218,7 +218,7 @@ export default function UpgradeModal({ isOpen, onClose, usage, triggerReason }: 
               </div>
               <div>
                 <p className="text-sm text-gray-800 italic mb-2">
-                  "Pro로 업그레이드한 후 유료 폴더 판매로 한 달에 $200 이상의 부수입을 얻고 있어요. 투자 대비 정말 만족스러운 결과입니다!"
+                  &quot;Pro로 업그레이드한 후 유료 폴더 판매로 한 달에 $200 이상의 부수입을 얻고 있어요. 투자 대비 정말 만족스러운 결과입니다!&quot;
                 </p>
                 <p className="text-xs text-gray-600">— Sarah K., 디자이너</p>
               </div>

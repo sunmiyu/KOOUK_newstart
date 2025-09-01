@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState, useRef } from 'react'
 import { cn } from '@/lib/utils'
@@ -115,9 +116,11 @@ export default function Sidebar() {
               className="w-full flex items-center p-3 hover:bg-gray-700 rounded-lg transition-colors"
             >
               {user.user_metadata?.avatar_url ? (
-                <img
+                <Image
                   src={user.user_metadata.avatar_url}
                   alt="Profile"
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-full"
                   onError={(e) => {
                     e.currentTarget.style.display = 'none'

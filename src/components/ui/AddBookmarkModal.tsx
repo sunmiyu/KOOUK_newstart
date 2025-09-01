@@ -3,11 +3,12 @@
 import { useState } from 'react'
 import { extractMetadata, isValidUrl } from '@/utils/metadata'
 import { isYouTubeUrl, getYouTubeMetadata } from '@/utils/youtube'
+import { BookmarkFormData } from '@/types/common'
 
 interface AddBookmarkModalProps {
   isOpen: boolean
   onClose: () => void
-  onSuccess?: (bookmark: any) => void
+  onSuccess?: (bookmark: BookmarkFormData) => void
   categories?: Array<{ id: string; name: string; isDefault?: boolean }>
   defaultCategory?: string
 }

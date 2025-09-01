@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import { Folder, CreateContentData } from '@/types/folder'
-import { fetchEnhancedMetadata, isValidUrl, isYouTubeUrl } from '@/utils/enhancedMetadata'
+import { fetchEnhancedMetadata, EnhancedMetadata } from '@/utils/enhancedMetadata'
 
 interface ContentInputProps {
   selectedFolder?: Folder
@@ -78,7 +79,7 @@ export default function ContentInput({
   }
 
   // 향상된 메타데이터 추출
-  const extractContentMetadata = async (content: string, type: CreateContentData['type']) => {
+  const extractContentMetadata = async (content: string, type: CreateContentData['type']): Promise<Partial<EnhancedMetadata>> => {
     if (type !== 'link') return {}
 
     try {
@@ -139,7 +140,7 @@ export default function ContentInput({
         
         // 제목 결정 로직
         let title = 'Content'
-        if (type === 'link' && metadata.title) {
+        if (type === 'link' && metadata && 'title' in metadata && metadata.title) {
           title = metadata.title
         } else if (type === 'link') {
           title = 'Link'
@@ -153,7 +154,7 @@ export default function ContentInput({
 
         const contentData: CreateContentData = {
           title,
-          description: metadata.description || undefined,
+          description: (metadata && 'description' in metadata && metadata.description) || undefined,
           type,
           folder_id: selectedFolder.id,
           ...(type === 'link' || type === 'image' ? { url: input.trim() } : { content: input.trim() }),
@@ -240,10 +241,13 @@ export default function ContentInput({
                 key={`pasted-${index}`}
                 className="relative rounded-lg bg-white border overflow-hidden"
               >
-                <img
+                <Image
                   src={URL.createObjectURL(file)}
                   alt={file.name}
+                  width={80}
+                  height={80}
                   className="w-20 h-20 object-cover"
+                  unoptimized
                 />
                 <button
                   onClick={() => removePastedImage(index)}

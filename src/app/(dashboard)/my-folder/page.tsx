@@ -1,17 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
+import { useIsMobile } from '@/hooks/useMediaQuery'
 import ContentInput from '@/components/ui/ContentInput'
 import ContentCard from '@/components/ui/ContentCard'
-import ShareFolderModal from '@/components/ui/ShareFolderModal'
-import DeleteFolderModal from '@/components/ui/DeleteFolderModal'
-import BigNoteModal from '@/components/ui/BigNoteModal'
-import { Folder, CreateContentData, ContentItem, UserUsage, UserPlan, PLAN_LIMITS } from '@/types/folder'
+import ContentCardMobile from '@/components/ui/ContentCard_m'
+import { Folder, CreateContentData, ContentItem, UserUsage, UserPlan, PLAN_LIMITS, ShareOptions } from '@/types/folder'
 import { FolderSharingService } from '@/services/folderSharing'
 import { StorageCalculator } from '@/utils/storageCalculation'
-import UpgradeModal from '@/components/ui/UpgradeModal'
 
-// 실제 예시 폴더 데이터
+// 지연 로딩 컴포넌트들 (번들 크기 최적화)
+const ShareFolderModal = lazy(() => import('@/components/ui/ShareFolderModal'))
+const DeleteFolderModal = lazy(() => import('@/components/ui/DeleteFolderModal'))
+const BigNoteModal = lazy(() => import('@/components/ui/BigNoteModal'))
+const UpgradeModal = lazy(() => import('@/components/ui/UpgradeModal'))
+
+// 간단한 초기 폴더 데이터 (대용량 데이터는 dynamic import)
 const initialFolders: Folder[] = [
   {
     id: '1',
@@ -21,7 +25,7 @@ const initialFolders: Folder[] = [
     is_public: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    item_count: 5,
+    item_count: 2,
     shared_status: 'private'
   },
   {
@@ -32,212 +36,37 @@ const initialFolders: Folder[] = [
     is_public: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    item_count: 4,
+    item_count: 2,
     shared_status: 'shared-synced'
   }
 ]
 
-// 실제 예시 콘텐츠 아이템들
+// 최소화된 예시 콘텐츠 (번들 크기 최적화)
 const initialContentItems: ContentItem[] = [
-  // React 개발 자료 폴더 (folder_id: '1')
   {
     id: '1',
     title: 'React 공식 문서',
-    description: 'React의 최신 공식 문서. Hooks, Components, 성능 최적화 등 모든 내용을 다룹니다.',
     type: 'link',
     url: 'https://react.dev',
     folder_id: '1',
     user_id: 'user1',
-    created_at: new Date(Date.now() - 86400000).toISOString(), // 1일 전
-    updated_at: new Date(Date.now() - 86400000).toISOString(),
-    metadata: {
-      title: 'React',
-      description: 'The library for web and native user interfaces',
-      domain: 'react.dev',
-      platform: 'web',
-      image: 'https://react.dev/images/home/conf2021/cover.svg'
-    }
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   },
   {
     id: '2',
-    title: 'Next.js 14 새로운 기능들',
-    description: 'App Router, Server Components, 성능 개선사항 정리',
+    title: 'Next.js 학습 노트',
     type: 'note',
-    content: `# Next.js 14 주요 업데이트
-
-## App Router
-- 새로운 라우팅 시스템
-- 레이아웃과 페이지 분리
-- 중첩 라우팅 지원
-
-## Server Components
-- 서버에서 렌더링되는 컴포넌트
-- 번들 크기 최적화
-- 데이터 페칭 개선
-
-## 성능 개선
-- 빌드 속도 향상
-- 메모리 사용량 감소`,
+    content: '# Next.js 14\n- App Router\n- Server Components',
     folder_id: '1',
     user_id: 'user1',
-    created_at: new Date(Date.now() - 172800000).toISOString(), // 2일 전
-    updated_at: new Date(Date.now() - 172800000).toISOString()
-  },
-  {
-    id: '3',
-    title: '코딩애플 - React 완전정복',
-    description: 'React 기초부터 고급까지, 실무에서 바로 쓸 수 있는 완전한 강의',
-    type: 'link',
-    url: 'https://www.youtube.com/watch?v=LclObYwGj90',
-    folder_id: '1',
-    user_id: 'user1',
-    created_at: new Date(Date.now() - 259200000).toISOString(), // 3일 전
-    updated_at: new Date(Date.now() - 259200000).toISOString(),
-    metadata: {
-      title: 'React 완전정복 - 기초부터 실무까지',
-      description: 'React를 처음 배우는 사람도 쉽게 따라할 수 있는 완전한 강의입니다.',
-      domain: 'youtube.com',
-      platform: 'youtube',
-      image: 'https://img.youtube.com/vi/LclObYwGj90/maxresdefault.jpg',
-      videoId: 'LclObYwGj90',
-      channelTitle: '코딩애플',
-      duration: '2:15:30'
-    }
-  },
-  {
-    id: '4',
-    title: 'Component Architecture',
-    description: '재사용 가능한 컴포넌트 설계 방법론 정리',
-    type: 'document',
-    content: `# React 컴포넌트 아키텍처 설계
-
-## 1. 컴포넌트 분리 원칙
-### Single Responsibility Principle
-- 하나의 컴포넌트는 하나의 책임만 가져야 함
-- 너무 많은 기능을 한 컴포넌트에 몰아넣지 않기
-
-### Composition over Inheritance
-- 상속보다는 컴포지션 사용
-- Higher-Order Components (HOC) 활용
-- Render Props 패턴 적용
-
-## 2. 컴포넌트 구조
-### Atomic Design Pattern
-- Atoms: 가장 기본적인 HTML 요소 (Button, Input)
-- Molecules: 여러 Atoms의 조합 (SearchBox)
-- Organisms: 여러 Molecules의 조합 (Header, Footer)
-- Templates: 레이아웃 정의
-- Pages: 실제 콘텐츠가 들어간 완성된 페이지
-
-## 3. State 관리
-### Local State vs Global State
-- 컴포넌트 내부에서만 사용되는 상태는 useState 사용
-- 여러 컴포넌트가 공유하는 상태는 Context API 또는 Redux 사용
-
-### Props Drilling 해결
-- Context API 활용
-- State Lifting 적절히 사용
-- Custom Hooks로 로직 분리`,
-    folder_id: '1',
-    user_id: 'user1',
-    created_at: new Date(Date.now() - 432000000).toISOString(), // 5일 전
-    updated_at: new Date(Date.now() - 432000000).toISOString()
-  },
-  {
-    id: '5',
-    title: 'React 프로젝트 폴더 구조.png',
-    description: '대규모 React 프로젝트의 효율적인 폴더 구조 예시',
-    type: 'image',
-    url: 'https://picsum.photos/600/400?random=react',
-    folder_id: '1',
-    user_id: 'user1',
-    created_at: new Date(Date.now() - 518400000).toISOString(), // 6일 전
-    updated_at: new Date(Date.now() - 518400000).toISOString()
-  },
-  
-  // 맛집 & 여행 폴더 (folder_id: '2')
-  {
-    id: '6',
-    title: '서울 맛집 베스트 10',
-    description: '현지인이 추천하는 진짜 서울 맛집들. 관광지 음식점 말고 진짜 맛집만!',
-    type: 'note',
-    content: `# 서울 진짜 맛집 리스트 🍽️
-
-## 한식
-1. **광화문 국밥** - 24시간 운영, 진짜 사골국물
-2. **명동교자** - 원조 만두집, 김치만두가 일품
-3. **진진** - 홍대 갈비찜, 양도 많고 맛도 좋음
-
-## 양식
-4. **더플레이트** - 성수동 파스타 맛집
-5. **브루클린버거** - 수제버거 맛집
-
-## 일식
-6. **스시조** - 오마카세 가성비 최고
-7. **라멘야** - 진짜 일본식 라멘
-
-## 디저트
-8. **카페 온양** - 티라미수가 유명
-9. **설빙** - 팥빙수 원조
-10. **마카롱시** - 수제 마카롱`,
-    folder_id: '2',
-    user_id: 'user1',
-    created_at: new Date(Date.now() - 604800000).toISOString(), // 7일 전
-    updated_at: new Date(Date.now() - 604800000).toISOString()
-  },
-  {
-    id: '7',
-    title: '제주도 여행 가이드 - 현지인 추천 코스',
-    description: '제주도 3박 4일 완전 정복! 숨은 명소부터 맛집까지 총정리',
-    type: 'link',
-    url: 'https://blog.naver.com/jeju_travel/example',
-    folder_id: '2',
-    user_id: 'user1',
-    created_at: new Date(Date.now() - 691200000).toISOString(), // 8일 전
-    updated_at: new Date(Date.now() - 691200000).toISOString(),
-    metadata: {
-      title: '제주도 여행 완전정복 - 현지인이 알려주는 진짜 코스',
-      description: '관광지가 아닌 진짜 제주를 경험할 수 있는 특별한 코스들을 소개합니다.',
-      domain: 'blog.naver.com',
-      platform: 'web',
-      image: 'https://picsum.photos/400/300?random=jeju'
-    }
-  },
-  {
-    id: '8',
-    title: '백종원 맛남의광장 - 전주편',
-    description: '백종원이 직접 찾아간 전주 맛집들, 진짜 맛있는 곳만 엄선!',
-    type: 'link',
-    url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-    folder_id: '2',
-    user_id: 'user1',
-    created_at: new Date(Date.now() - 777600000).toISOString(), // 9일 전
-    updated_at: new Date(Date.now() - 777600000).toISOString(),
-    metadata: {
-      title: '맛남의광장 전주편 - 백종원의 맛집 탐방',
-      description: '전주 한옥마을의 진짜 맛집들을 백종원과 함께 탐방해보세요!',
-      domain: 'youtube.com',
-      platform: 'youtube',
-      image: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
-      videoId: 'dQw4w9WgXcQ',
-      channelTitle: 'tvN',
-      duration: '48:30'
-    }
-  },
-  {
-    id: '9',
-    title: '부산 해운대 맛집 사진',
-    description: '부산 여행에서 먹었던 최고의 회 한 상. 이 집 이름이 뭐였지?',
-    type: 'image',
-    url: 'https://picsum.photos/600/400?random=busan',
-    folder_id: '2',
-    user_id: 'user1',
-    created_at: new Date(Date.now() - 864000000).toISOString(), // 10일 전
-    updated_at: new Date(Date.now() - 864000000).toISOString()
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   }
 ]
 
 export default function MyFolderPage() {
+  const isMobile = useIsMobile()
   const [folders, setFolders] = useState<Folder[]>(initialFolders)
   const [selectedFolder, setSelectedFolder] = useState<Folder>({
     ...initialFolders[0],
@@ -309,7 +138,7 @@ export default function MyFolderPage() {
     setContentItems(prev => [newItem, ...prev])
   }
 
-  const handleShareFolder = async (shareOptions: any) => {
+  const handleShareFolder = async (shareOptions: ShareOptions) => {
     // 유료 판매 체크
     if (shareOptions.price > 0) {
       const canSell = StorageCalculator.canShareToMarketplace(userUsage, true)
@@ -475,7 +304,7 @@ export default function MyFolderPage() {
   }
   
   // 공유 버튼 텍스트 - 항상 "Share to Market"으로 표시
-  const getShareButtonText = (status: Folder['shared_status']) => {
+  const getShareButtonText = () => {
     return '📤 Share to Market'
   }
   
@@ -631,7 +460,7 @@ export default function MyFolderPage() {
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
                 </svg>
-                {getShareButtonText(currentStatus)}
+                {getShareButtonText()}
               </button>
               <button className="p-2 text-gray-400 hover:text-gray-600">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -648,15 +477,28 @@ export default function MyFolderPage() {
         </div>
 
         <div className="flex-1 p-6 pb-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
-            {/* Content Cards */}
+          <div className={`grid gap-4 mb-6 ${
+            isMobile 
+              ? 'grid-cols-1 px-2' // 모바일: 1열, 패딩 추가
+              : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' // PC: 기존대로
+          }`}>
+            {/* Content Cards - 반응형 */}
             {folderContent.map((item) => (
-              <ContentCard
-                key={item.id}
-                item={item}
-                onEdit={(item) => console.log('Edit:', item)}
-                onDelete={handleDeleteContent}
-              />
+              isMobile ? (
+                <ContentCardMobile
+                  key={item.id}
+                  item={item}
+                  onEdit={(item) => console.log('Edit:', item)}
+                  onDelete={handleDeleteContent}
+                />
+              ) : (
+                <ContentCard
+                  key={item.id}
+                  item={item}
+                  onEdit={(item) => console.log('Edit:', item)}
+                  onDelete={handleDeleteContent}
+                />
+              )
             ))}
           </div>
         </div>
@@ -671,24 +513,31 @@ export default function MyFolderPage() {
         </div>
       </div>
 
-      {/* Share Folder Modal */}
-      <ShareFolderModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
-        folder={selectedFolder}
-        onShareFolder={handleShareFolder}
-      />
+      {/* 지연 로딩 모달들 */}
+      <Suspense fallback={null}>
+        {/* Share Folder Modal */}
+        {showShareModal && (
+          <ShareFolderModal
+            isOpen={showShareModal}
+            onClose={() => setShowShareModal(false)}
+            folder={selectedFolder}
+            onShareFolder={handleShareFolder}
+          />
+        )}
 
-      {/* Delete Folder Modal */}
-      <DeleteFolderModal
-        isOpen={showDeleteModal}
-        onClose={() => {
-          setShowDeleteModal(false)
-          setFolderToDelete(null)
-        }}
-        folder={folderToDelete}
-        onConfirm={handleDeleteFolder}
-      />
+        {/* Delete Folder Modal */}
+        {showDeleteModal && folderToDelete && (
+          <DeleteFolderModal
+            isOpen={showDeleteModal}
+            onClose={() => {
+              setShowDeleteModal(false)
+              setFolderToDelete(null)
+            }}
+            folder={folderToDelete}
+            onConfirm={handleDeleteFolder}
+          />
+        )}
+      </Suspense>
       
       {/* New Folder Prompt */}
       {showNewFolderPrompt && (
@@ -739,23 +588,30 @@ export default function MyFolderPage() {
         </button>
       </div>
 
-      {/* Big Note Modal */}
-      <BigNoteModal
-        isOpen={showBigNoteModal}
-        onClose={() => setShowBigNoteModal(false)}
-        onSave={handleSaveNote}
-        allFolders={folders.map(f => ({ id: f.id, name: f.name }))}
-        selectedFolderId={selectedFolder.id}
-        variant="drawer"
-      />
-      
-      {/* Upgrade Modal */}
-      <UpgradeModal
-        isOpen={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
-        usage={userUsage}
-        triggerReason={upgradeReason}
-      />
+      {/* 추가 지연 로딩 모달들 */}
+      <Suspense fallback={null}>
+        {/* Big Note Modal */}
+        {showBigNoteModal && (
+          <BigNoteModal
+            isOpen={showBigNoteModal}
+            onClose={() => setShowBigNoteModal(false)}
+            onSave={handleSaveNote}
+            allFolders={folders.map(f => ({ id: f.id, name: f.name }))}
+            selectedFolderId={selectedFolder.id}
+            variant="drawer"
+          />
+        )}
+        
+        {/* Upgrade Modal */}
+        {showUpgradeModal && userUsage && (
+          <UpgradeModal
+            isOpen={showUpgradeModal}
+            onClose={() => setShowUpgradeModal(false)}
+            usage={userUsage}
+            triggerReason={upgradeReason}
+          />
+        )}
+      </Suspense>
     </div>
   )
 }

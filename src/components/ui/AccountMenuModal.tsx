@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useAuth } from '@/hooks/useAuth'
 import { useState } from 'react'
 import { UserUsage, UserPlan, PLAN_LIMITS } from '@/types/folder'
@@ -113,9 +114,11 @@ export default function AccountMenuModal({
           <div className="px-4 py-3 border-b border-gray-100">
             <div className="flex items-center space-x-3">
               {user.user_metadata?.avatar_url ? (
-                <img
+                <Image
                   src={user.user_metadata.avatar_url}
                   alt="Profile"
+                  width={32}
+                  height={32}
                   className="w-8 h-8 rounded-full"
                 />
               ) : (

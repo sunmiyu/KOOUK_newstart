@@ -29,12 +29,6 @@ export default function UsageVisualization({
     return 'bg-green-500'
   }
 
-  const getProgressBgColor = (percent: number) => {
-    if (percent >= 100) return 'bg-red-50'
-    if (percent >= 90) return 'bg-orange-50'
-    if (percent >= 70) return 'bg-yellow-50'
-    return 'bg-green-50'
-  }
 
   const getTextColor = (percent: number) => {
     if (percent >= 100) return 'text-red-700'

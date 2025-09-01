@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import { Folder, ShareOptions } from '@/types/folder'
 import { FolderSharingService } from '@/services/folderSharing'
 import { useUserUsage } from '@/hooks/useUserUsage'
@@ -10,7 +11,7 @@ import { useToast } from '@/hooks/useToast'
 interface ShareFolderModalProps {
   isOpen: boolean
   onClose: () => void
-  folder?: Folder & { items?: any[] }
+  folder?: Folder & { items?: unknown[] }
   onShareFolder?: (shareOptions: ShareOptions) => void
   onUpgradeRequired?: () => void
 }
@@ -159,10 +160,13 @@ export default function ShareFolderModal({
             <div className="relative">
               {coverImage ? (
                 <div className="relative aspect-[3/1] rounded-lg overflow-hidden bg-gray-100">
-                  <img
+                  <Image
                     src={coverImage}
                     alt="Cover preview"
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover"
+                    unoptimized
                   />
                   <button
                     onClick={() => setCoverImage('')}
@@ -416,7 +420,7 @@ export default function ShareFolderModal({
                     </span>
                   </div>
                   <div className="text-sm text-gray-600">
-                    {folder.last_shared_at ? (
+                    {folder?.last_shared_at ? (
                       <>
                         📅 {new Date(folder.last_shared_at).toLocaleDateString('ko-KR', {
                           year: 'numeric',
